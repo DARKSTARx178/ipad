@@ -1,34 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Desk Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Desk Dashboard Pro</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <!-- LANDSCAPE MODE: CLOCK FACE -->
-  <div id="landscape-clock" class="view">
-    <div class="clock-container">
-      <div id="time">00:00:00</div>
-      <div id="date">LOADING...</div>
-    </div>
-  </div>
+    <!-- LANDSCAPE MODE: APPLE STYLE WIDGET DOCK -->
+    <div id="landscape-view" class="view">
+        <div class="widget-grid">
 
-  <!-- PORTRAIT MODE: MIRO-STYLE WHITEBOARD -->
-  <div id="portrait-whiteboard" class="view">
-    <div class="board-header">
-      <h2>Workspace Board</h2>
-      <button id="add-note-btn">+ Add Note</button>
-    </div>
-    <div id="canvas">
-      <!-- Notes are generated here -->
-    </div>
-  </div>
+            <!-- WIDGET 1: APPLE SLEEK CLOCK -->
+            <div class="widget card" id="widget-clock">
+                <div class="clock-display">
+                    <div id="apple-time">00:00</div>
+                    <div id="apple-date">LOADING...</div>
+                </div>
+            </div>
 
-  <script src="script.js"></script>
+            <!-- WIDGET 2: SPOTIFY IFRAME PLAYER EMBED -->
+            <div class="widget card" id="widget-spotify">
+                <div id="spotify-container">
+                    <!-- Injected dynamically via script -->
+                </div>
+            </div>
+
+            <!-- WIDGET 3: POMODORO TIMER CORE -->
+            <div class="widget card" id="widget-pomodoro">
+                <div class="pomo-container">
+                    <h3>Focus Session</h3>
+                    <div id="pomo-time">25:00</div>
+                    <div class="pomo-controls">
+                        <button id="pomo-start-btn">Start</button>
+                        <button id="pomo-reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PERSISTENT EDITING DASHBOARD MODAL -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <h3>Widget Settings</h3>
+                <label>Spotify Track/Playlist Link ID:</label>
+                <input type="text" id="spotify-id-input" placeholder="e.g., 4PTG3Z6ehGkBFQH6sgwWjY">
+                <div class="modal-actions">
+                    <button id="save-settings-btn">Save Layout</button>
+                    <button id="close-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PORTRAIT MODE: INTERACTIVE WHITEBOARD & EXPANDED TO-DO CONTROLLER -->
+    <div id="portrait-view" class="view">
+        <div class="board-header">
+            <h2>Workspace Planner</h2>
+            <div class="header-actions">
+                <button id="add-todo-btn">+ Add Task</button>
+                <button id="add-note-btn">+ Add Note</button>
+            </div>
+        </div>
+
+        <div class="workspace-split">
+            <!-- FIXED SECTION: PERSISTENT TO-DO TASK TRACKER -->
+            <div class="todo-panel">
+                <h3>Tasks</h3>
+                <ul id="todo-list">
+                    <!-- Dynamic tasks injection -->
+                </ul>
+            </div>
+
+            <!-- FREE FORM CANVAS: INTERACTIVE STICKY NOTATIONS -->
+            <div id="canvas">
+                <!-- Interactive draggable notes generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
