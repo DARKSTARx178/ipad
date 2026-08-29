@@ -2,6 +2,13 @@
 window.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
 
 // ========================================================
+// CONFIG
+// ========================================================
+var OWM_API_KEY = 'ed8e61af30682533f8846012e1ec66ee';
+var OWM_CITY = 'Singapore,SG';
+var OWM_UNITS = 'metric';
+
+// ========================================================
 // LANDSCAPE GRID CONFIG — 4 cols x 2 rows = 8 exact slots
 // ========================================================
 var GRID_COLS = 4;
@@ -56,35 +63,79 @@ function findFreeSlot(span) {
 
 // ========================================================
 // MEMORY STATE CONTROLLERS
+// New storage key (v4) so nobody's leftover cached widget data from an
+// earlier version (clock/pomodoro/notes/battery) can carry over and
+// reference widget types that no longer exist.
 // ========================================================
 var state = {
-    widgets: JSON.parse(localStorage.getItem('sb_widgets_v2')) || [
-        { id: 'w1', type: 'clock', span: 2, slot: 0 },
-        { id: 'w2', type: 'pomodoro', span: 2, slot: 2 },
-        { id: 'w3', type: 'weather', span: 1, slot: 4 },
-        { id: 'w4', type: 'notes', span: 1, slot: 5 },
-        { id: 'w5', type: 'battery', span: 1, slot: 6 }
-    ],
-    blocks: JSON.parse(localStorage.getItem('sb_blocks')) || [
-        { id: 'b1', type: 'note', x: 50, y: 80, text: 'Tap note card content directly' },
-        { id: 'b2', type: 'todo', x: 260, y: 150, text: 'Wipe down work surface desk space', done: false }
-    ]
+    widgets: [],
+    blocks: []
 };
 
+(function loadState() {
+    try {
+        var savedWidgets = JSON.parse(localStorage.getItem('sb_widgets_v4'));
+        if (savedWidgets && savedWidgets.length) {
+            state.widgets = savedWidgets;
+        }
+    } catch (err) {
+        state.widgets = [];
+    }
+    if (!state.widgets || !state.widgets.length) {
+        state.widgets = [
+            { id: 'w1', type: 'clock', span: 2, slot: 0 },
+            { id: 'w2', type: 'weather', span: 1, slot: 2 },
+            { id: 'w3', type: 'pet', span: 1, slot: 3 },
+            { id: 'w4', type: 'timer', span: 2, slot: 4 }
+        ];
+    }
+
+    try {
+        var savedBlocks = JSON.parse(localStorage.getItem('sb_blocks'));
+        if (savedBlocks && savedBlocks.length) {
+            state.blocks = savedBlocks;
+        }
+    } catch (err) {
+        state.blocks = [];
+    }
+    if (!state.blocks || !state.blocks.length) {
+        state.blocks = [
+            { id: 'b1', type: 'note', x: 50, y: 80, text: 'Tap note card content directly' },
+            { id: 'b2', type: 'todo', x: 260, y: 150, text: 'Wipe down work surface desk space', done: false }
+        ];
+    }
+})();
+
 function saveState() {
-    localStorage.setItem('sb_widgets_v2', JSON.stringify(state.widgets));
-    localStorage.setItem('sb_blocks', JSON.stringify(state.blocks));
+    try {
+        localStorage.setItem('sb_widgets_v4', JSON.stringify(state.widgets));
+        localStorage.setItem('sb_blocks', JSON.stringify(state.blocks));
+    } catch (err) {
+        // Storage can fail (private mode, quota); never let that break the app.
+    }
 }
 
 var WIDGET_ICONS = {
     weather: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
-    notes: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z" stroke-linejoin="round"/><path d="M15 3v4h4M9 12h6M9 16h6" stroke-linecap="round"/></svg>',
-    battery: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="8" rx="2" stroke-linejoin="round"/><path d="M21 10.5v3" stroke-linecap="round"/></svg>'
+    pet: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="7"/><path d="M9 11h.01M15 11h.01" stroke-linecap="round" stroke-width="2.4"/><path d="M9.5 15.5c1 1 4 1 5 0" stroke-linecap="round"/><path d="M8 6.5C7 5 5 5 4.5 6.5M16 6.5C17 5 19 5 19.5 6.5" stroke-linecap="round"/></svg>',
+    timer: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2h6" stroke-linecap="round"/></svg>'
 };
 
 var ICON_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
 var ICON_RESET = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9A7 7 0 0 1 19 9M18.5 15a7 7 0 0 1-13.5 0" stroke-linecap="round"/></svg>';
+
+// ========================================================
+// SAFE-RUN HELPER — never let one broken widget blank the whole screen.
+// Every widget "init" function is wrapped in try/catch through this.
+// ========================================================
+function safeRun(fn, label) {
+    try {
+        fn();
+    } catch (err) {
+        // Swallow and continue; the rest of the dashboard keeps working.
+    }
+}
 
 // ========================================================
 // ORIENTATION A: LANDSCAPE SLOT GRID
@@ -93,52 +144,53 @@ var jiggleMode = false;
 var dragCtx = null;
 
 function renderDashboardGrid() {
-    var grid = document.getElementById('grid-surface');
-    if (!grid) return;
-    grid.innerHTML = '';
+    safeRun(function () {
+        var grid = document.getElementById('grid-surface');
+        if (!grid) return;
+        grid.innerHTML = '';
 
-    state.widgets.forEach(function (wData) {
-        var rect = slotRect(wData.slot, wData.span);
-        var slot = document.createElement('div');
-        slot.className = 'widget-slot' + (jiggleMode ? ' jiggle' : '');
-        slot.id = 'slot-' + wData.id;
-        slot.style.left = rect.left + 'px';
-        slot.style.top = rect.top + 'px';
-        slot.style.width = rect.width + 'px';
-        slot.style.height = rect.height + 'px';
+        state.widgets.forEach(function (wData) {
+            var rect = slotRect(wData.slot, wData.span);
+            var slot = document.createElement('div');
+            slot.className = 'widget-slot' + (jiggleMode ? ' jiggle' : '');
+            slot.id = 'slot-' + wData.id;
+            slot.style.left = rect.left + 'px';
+            slot.style.top = rect.top + 'px';
+            slot.style.width = rect.width + 'px';
+            slot.style.height = rect.height + 'px';
 
-        if (wData.type === 'clock') {
-            slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">00:00</div><div id="apple-date">LOADING...</div></div>';
-        } else if (wData.type === 'pomodoro') {
-            slot.innerHTML = '<div class="pomo-rotary-container"><div class="dial-outer-ring" id="rotary-ring"></div><div id="pomo-time">25:00</div><div class="pomo-icon-controls"><button class="icon-btn" id="pomo-play-btn">' + ICON_PLAY + '</button><button class="icon-btn" id="pomo-reset-btn">' + ICON_RESET + '</button></div></div>';
-        } else if (wData.type === 'weather') {
-            slot.innerHTML = '<div class="weather-wrapper">' + WIDGET_ICONS.weather + '<div class="weather-temp">--°</div><div class="weather-label">No data source</div></div>';
-        } else if (wData.type === 'notes') {
-            slot.innerHTML = '<div class="notes-wrapper">' + WIDGET_ICONS.notes + '<span>Switch to Portrait</span></div>';
-        } else if (wData.type === 'battery') {
-            slot.innerHTML = '<div class="battery-wrapper">' + WIDGET_ICONS.battery + '<div class="battery-pct">--%</div></div>';
-        }
+            if (wData.type === 'clock') {
+                slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">--:--</div><div id="apple-ampm">--</div></div>';
+            } else if (wData.type === 'weather') {
+                slot.innerHTML = '<div class="weather-wrapper" id="weather-box">' + WIDGET_ICONS.weather + '<div class="weather-temp" id="weather-temp">--°</div><div class="weather-label" id="weather-label">Loading...</div></div>';
+            } else if (wData.type === 'pet') {
+                slot.innerHTML = '<div class="pet-wrapper"><div class="pet-scene"><div class="pet-sprite" id="pet-sprite-' + wData.id + '">' + WIDGET_ICONS.pet + '</div></div><div class="pet-label" id="pet-label-' + wData.id + '">idle</div></div>';
+            } else if (wData.type === 'timer') {
+                slot.innerHTML = '<div class="simple-timer-wrapper"><div id="timer-display-' + wData.id + '">05:00</div><div class="timer-controls"><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="start">' + ICON_PLAY + '</button><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="reset">' + ICON_RESET + '</button></div></div>';
+            }
 
-        if (jiggleMode) {
-            var badge = document.createElement('div');
-            badge.className = 'widget-delete-badge';
-            badge.innerHTML = '&#10005;';
-            badge.addEventListener('touchend', function (e) {
-                e.stopPropagation();
-                state.widgets = state.widgets.filter(function (w) { return w.id !== wData.id; });
-                saveState();
-                renderDashboardGrid();
-            });
-            slot.appendChild(badge);
-        }
+            if (jiggleMode) {
+                var badge = document.createElement('div');
+                badge.className = 'widget-delete-badge';
+                badge.innerHTML = '&#10005;';
+                badge.addEventListener('touchend', function (e) {
+                    e.stopPropagation();
+                    state.widgets = state.widgets.filter(function (w) { return w.id !== wData.id; });
+                    saveState();
+                    renderDashboardGrid();
+                });
+                slot.appendChild(badge);
+            }
 
-        grid.appendChild(slot);
-        bindWidgetDrag(slot, wData);
+            grid.appendChild(slot);
+            bindWidgetDrag(slot, wData);
+        });
     });
 
-    initClockEngine();
-    initRotaryTimerEngine();
-    initBatteryEngine();
+    safeRun(initClockEngine);
+    safeRun(initWeatherEngine);
+    safeRun(initPetEngines);
+    safeRun(initSimpleTimers);
 }
 
 function enterJiggleMode() {
@@ -157,7 +209,7 @@ function bindWidgetDrag(el, wData) {
     var holdTimer;
 
     el.addEventListener('touchstart', function (e) {
-        if (e.target.closest('.widget-delete-badge') || e.target.closest('#rotary-ring') || e.target.tagName === 'BUTTON') return;
+        if (e.target.closest('.widget-delete-badge') || e.target.tagName === 'BUTTON') return;
         var touch = e.touches[0];
 
         if (jiggleMode) {
@@ -228,130 +280,218 @@ function finishWidgetDrag(el, wData) {
     renderDashboardGrid();
 }
 
+// 1. Clock — hour, minute, AM/PM only, no seconds, no timezone label
 function initClockEngine() {
-    function tick() {
-        var now = new Date();
-        var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit', hour12: true });
-        var dateStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Singapore', weekday: 'long', month: 'short', day: 'numeric' });
+    var timeEl = document.getElementById('apple-time');
+    if (!timeEl) return;
 
-        var timeEl = document.getElementById('apple-time');
-        var dateEl = document.getElementById('apple-date');
-        if (timeEl) timeEl.textContent = timeStr;
-        if (dateEl) dateEl.textContent = dateStr;
+    function tick() {
+        safeRun(function () {
+            var now = new Date();
+            var hourMin = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit', hour12: true });
+            var parts = hourMin.split(' ');
+            var t = document.getElementById('apple-time');
+            var ap = document.getElementById('apple-ampm');
+            if (t) t.textContent = parts[0];
+            if (ap) ap.textContent = parts[1] || '';
+        });
     }
-    setInterval(tick, 1000);
+    if (window.__clockInterval) clearInterval(window.__clockInterval);
+    window.__clockInterval = setInterval(tick, 1000);
     tick();
 }
 
-var pomoDuration = 1500;
-var pomoTimer = null;
+// 2. Weather — live OpenWeatherMap fetch. Every failure path is caught
+//    so a network error, bad key, or slow response can never stall or
+//    blank the rest of the dashboard.
+function initWeatherEngine() {
+    var tempEl = document.getElementById('weather-temp');
+    var labelEl = document.getElementById('weather-label');
+    if (!tempEl || !labelEl) return;
 
-function initRotaryTimerEngine() {
-    var ring = document.getElementById('rotary-ring');
-    var display = document.getElementById('pomo-time');
-    var playBtn = document.getElementById('pomo-play-btn');
-    var resetBtn = document.getElementById('pomo-reset-btn');
+    if (!OWM_API_KEY) {
+        labelEl.textContent = 'No API key';
+        return;
+    }
 
-    if (!ring) return;
+    var url = 'https://api.openweathermap.org/data/2.5/weather?q=' + encodeURIComponent(OWM_CITY) + '&units=' + OWM_UNITS + '&appid=' + OWM_API_KEY;
 
-    var isSpinning = false;
-    var startAngle = 0;
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 8000;
 
-    ring.addEventListener('touchstart', function (e) {
-        isSpinning = true;
-        var t = e.touches[0];
-        var rect = ring.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        startAngle = Math.atan2(t.clientY - cy, t.clientX - cx);
-    });
+        xhr.onreadystatechange = function () {
+            safeRun(function () {
+                if (xhr.readyState !== 4) return;
+                var t = document.getElementById('weather-temp');
+                var l = document.getElementById('weather-label');
+                if (!t || !l) return;
 
-    ring.addEventListener('touchmove', function (e) {
-        if (!isSpinning) return;
-        e.preventDefault();
-        var t = e.touches[0];
-        var rect = ring.getBoundingClientRect();
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var currentAngle = Math.atan2(t.clientY - cy, t.clientX - cx);
-        var delta = currentAngle - startAngle;
-
-        if (Math.abs(delta) > 0.1) {
-            pomoDuration += delta > 0 ? 60 : -60;
-            if (pomoDuration < 60) pomoDuration = 60;
-            if (pomoDuration > 5400) pomoDuration = 5400;
-
-            var m = Math.floor(pomoDuration / 60).toString();
-            var s = (pomoDuration % 60).toString();
-            if (m.length < 2) m = '0' + m;
-            if (s.length < 2) s = '0' + s;
-            display.textContent = m + ':' + s;
-            startAngle = currentAngle;
-        }
-    });
-
-    ring.addEventListener('touchend', function () { isSpinning = false; });
-
-    if (playBtn) {
-        playBtn.addEventListener('touchend', function (e) {
-            e.stopPropagation();
-            if (pomoTimer) {
-                clearInterval(pomoTimer);
-                pomoTimer = null;
-                playBtn.innerHTML = ICON_PLAY;
-            } else {
-                playBtn.innerHTML = ICON_PAUSE;
-                pomoTimer = setInterval(function () {
-                    if (pomoDuration > 0) {
-                        pomoDuration--;
-                        var mins = Math.floor(pomoDuration / 60).toString();
-                        var secs = (pomoDuration % 60).toString();
-                        if (mins.length < 2) mins = '0' + mins;
-                        if (secs.length < 2) secs = '0' + secs;
-                        display.textContent = mins + ':' + secs;
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data.main) {
+                        t.textContent = Math.round(data.main.temp) + '°';
+                        l.textContent = (data.weather && data.weather[0] && data.weather[0].main) ? data.weather[0].main : '';
                     } else {
-                        clearInterval(pomoTimer);
-                        pomoTimer = null;
-                        playBtn.innerHTML = ICON_PLAY;
+                        l.textContent = 'Unavailable';
                     }
-                }, 1000);
-            }
-        });
-    }
+                } else if (xhr.status === 401) {
+                    l.textContent = 'Key not active yet';
+                } else {
+                    l.textContent = 'Unavailable';
+                }
+            });
+        };
 
-    if (resetBtn) {
-        resetBtn.addEventListener('touchend', function (e) {
+        xhr.onerror = function () {
+            safeRun(function () {
+                var l = document.getElementById('weather-label');
+                if (l) l.textContent = 'Offline';
+            });
+        };
+        xhr.ontimeout = function () {
+            safeRun(function () {
+                var l = document.getElementById('weather-label');
+                if (l) l.textContent = 'Timed out';
+            });
+        };
+
+        xhr.send();
+    } catch (err) {
+        labelEl.textContent = 'Unavailable';
+    }
+}
+
+// 3. Pet widget(s) — VS Code Pets style idle companion, no server needed.
+//    Supports more than one pet widget on the grid at once.
+var petIntervals = {};
+
+function initPetEngines() {
+    state.widgets.forEach(function (wData) {
+        if (wData.type !== 'pet') return;
+        var sprite = document.getElementById('pet-sprite-' + wData.id);
+        var label = document.getElementById('pet-label-' + wData.id);
+        if (!sprite) return;
+
+        if (petIntervals[wData.id]) clearInterval(petIntervals[wData.id]);
+
+        var localState = { x: 30, dir: 1 };
+        var moods = ['idle', 'walking', 'stretching', 'napping'];
+
+        petIntervals[wData.id] = setInterval(function () {
+            safeRun(function () {
+                var s = document.getElementById('pet-sprite-' + wData.id);
+                var l = document.getElementById('pet-label-' + wData.id);
+                if (!s) { clearInterval(petIntervals[wData.id]); return; }
+
+                var mood;
+                var roll = Math.random();
+                if (roll < 0.55) {
+                    mood = 'walking';
+                    localState.x += localState.dir * 6;
+                    if (localState.x > 150) { localState.dir = -1; }
+                    if (localState.x < 0) { localState.dir = 1; }
+                } else {
+                    mood = moods[Math.floor(Math.random() * moods.length)];
+                }
+                s.style.transform = 'translateX(' + localState.x + 'px) scaleX(' + localState.dir + ')';
+                s.className = 'pet-sprite mood-' + mood;
+                if (l) l.textContent = mood;
+            });
+        }, 1400);
+
+        sprite.addEventListener('touchend', function (e) {
             e.stopPropagation();
-            clearInterval(pomoTimer);
-            pomoTimer = null;
-            pomoDuration = 1500;
-            display.textContent = '25:00';
-            if (playBtn) playBtn.innerHTML = ICON_PLAY;
+            sprite.className = 'pet-sprite mood-happy';
+            if (label) label.textContent = 'happy!';
         });
+    });
+}
+
+// 4. Simple countdown timer — plain digits + start/pause/reset, no drag
+//    gestures or angle math, so there is nothing that can misfire during
+//    layout/centering changes.
+var timerData = {};
+
+function getTimerState(id) {
+    if (!timerData[id]) {
+        timerData[id] = { remaining: 300, running: false, interval: null };
+    }
+    return timerData[id];
+}
+
+function formatMMSS(totalSeconds) {
+    var m = Math.floor(totalSeconds / 60).toString();
+    var s = (totalSeconds % 60).toString();
+    if (m.length < 2) m = '0' + m;
+    if (s.length < 2) s = '0' + s;
+    return m + ':' + s;
+}
+
+function initSimpleTimers() {
+    var buttons = document.querySelectorAll('[data-timer-id]');
+    for (var i = 0; i < buttons.length; i++) {
+        bindTimerButton(buttons[i]);
     }
 }
 
-function initBatteryEngine() {
-    var pctEl = document.querySelector('.battery-pct');
-    if (!pctEl) return;
+function bindTimerButton(btn) {
+    btn.addEventListener('touchend', function (e) {
+        e.stopPropagation();
+        safeRun(function () {
+            var id = btn.getAttribute('data-timer-id');
+            var action = btn.getAttribute('data-action');
+            var ts = getTimerState(id);
+            var displayEl = document.getElementById('timer-display-' + id);
 
-    if (navigator.getBattery) {
-        navigator.getBattery().then(function (battery) {
-            function update() {
-                pctEl.textContent = Math.round(battery.level * 100) + '%';
+            if (action === 'reset') {
+                clearInterval(ts.interval);
+                ts.interval = null;
+                ts.running = false;
+                ts.remaining = 300;
+                if (displayEl) displayEl.textContent = formatMMSS(ts.remaining);
+                var playBtn = document.querySelector('[data-timer-id="' + id + '"][data-action="start"]');
+                if (playBtn) playBtn.innerHTML = ICON_PLAY;
+                return;
             }
-            update();
-            battery.addEventListener('levelchange', update);
+
+            if (action === 'start') {
+                if (ts.running) {
+                    clearInterval(ts.interval);
+                    ts.interval = null;
+                    ts.running = false;
+                    btn.innerHTML = ICON_PLAY;
+                } else {
+                    ts.running = true;
+                    btn.innerHTML = ICON_PAUSE;
+                    ts.interval = setInterval(function () {
+                        safeRun(function () {
+                            if (ts.remaining > 0) {
+                                ts.remaining--;
+                                var d = document.getElementById('timer-display-' + id);
+                                if (d) d.textContent = formatMMSS(ts.remaining);
+                            } else {
+                                clearInterval(ts.interval);
+                                ts.interval = null;
+                                ts.running = false;
+                                btn.innerHTML = ICON_PLAY;
+                            }
+                        });
+                    }, 1000);
+                }
+            }
         });
-    }
+    });
 }
 
+// 5. Long-press empty background to open the Add Widget drawer
 function initDrawerMechanics() {
     var surface = document.getElementById('landscape-view');
     var drawer = document.getElementById('widget-drawer');
     var holdTimer;
 
-    if (!surface) return;
+    if (!surface || !drawer) return;
 
     surface.addEventListener('touchstart', function (e) {
         if (jiggleMode) return;
@@ -376,7 +516,7 @@ function initDrawerMechanics() {
         setTimeout(function () { addLock = false; }, 400);
 
         var type = card.getAttribute('data-widget');
-        var span = (type === 'clock' || type === 'pomodoro') ? 2 : 1;
+        var span = (type === 'clock' || type === 'timer') ? 2 : 1;
         var freeSlot = findFreeSlot(span);
         if (freeSlot !== -1) {
             state.widgets.push({ id: 'w_' + Date.now(), type: type, span: span, slot: freeSlot });
@@ -403,14 +543,18 @@ function initDrawerMechanics() {
 
 // ========================================================
 // ORIENTATION B: PORTRAIT PLANNER MECHANICS
+// (Sticky notes + to-do only — the "Switch to Portrait" notes widget
+// and the landscape notes shortcut have both been removed.)
 // ========================================================
 var canvas = document.getElementById('canvas');
 var trashBin = document.getElementById('trash-bin');
 
 function renderFreeformCanvas() {
-    if (!canvas) return;
-    canvas.innerHTML = '';
-    state.blocks.forEach(function (bData) { createBlockNode(bData); });
+    safeRun(function () {
+        if (!canvas) return;
+        canvas.innerHTML = '';
+        state.blocks.forEach(function (bData) { createBlockNode(bData); });
+    });
 }
 
 function createBlockNode(data) {
@@ -502,7 +646,7 @@ function createBlockNode(data) {
 function initFABController() {
     var trigger = document.getElementById('fab-trigger');
     var popup = document.getElementById('fab-popup');
-    if (!trigger) return;
+    if (!trigger || !popup) return;
 
     var isOpen = false;
 
@@ -529,26 +673,37 @@ function initFABController() {
         }
     });
 
-    document.getElementById('fab-add-note').addEventListener('click', function () {
-        var block = { id: 'b_' + Date.now(), type: 'note', x: 60, y: 100, text: 'New Note card...' };
-        state.blocks.push(block);
-        saveState();
-        createBlockNode(block);
-        closePopup();
-    });
+    var addNoteBtn = document.getElementById('fab-add-note');
+    var addTodoBtn = document.getElementById('fab-add-todo');
 
-    document.getElementById('fab-add-todo').addEventListener('click', function () {
-        var block = { id: 'b_' + Date.now(), type: 'todo', x: 90, y: 140, text: 'Task checkbox text...', done: false };
-        state.blocks.push(block);
-        saveState();
-        createBlockNode(block);
-        closePopup();
-    });
+    if (addNoteBtn) {
+        addNoteBtn.addEventListener('click', function () {
+            var block = { id: 'b_' + Date.now(), type: 'note', x: 60, y: 100, text: 'New Note card...' };
+            state.blocks.push(block);
+            saveState();
+            createBlockNode(block);
+            closePopup();
+        });
+    }
+
+    if (addTodoBtn) {
+        addTodoBtn.addEventListener('click', function () {
+            var block = { id: 'b_' + Date.now(), type: 'todo', x: 90, y: 140, text: 'Task checkbox text...', done: false };
+            state.blocks.push(block);
+            saveState();
+            createBlockNode(block);
+            closePopup();
+        });
+    }
 }
 
+// ========================================================
+// INITIALIZATION BOOT MANAGER
+// Every step wrapped so one failure can never blank the whole page.
+// ========================================================
 window.onload = function () {
-    renderDashboardGrid();
-    initDrawerMechanics();
-    renderFreeformCanvas();
-    initFABController();
+    safeRun(renderDashboardGrid);
+    safeRun(initDrawerMechanics);
+    safeRun(renderFreeformCanvas);
+    safeRun(initFABController);
 };

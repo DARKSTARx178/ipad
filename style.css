@@ -107,7 +107,7 @@ html {
         z-index: 30;
     }
 
-    /* MODULAR SUBCOMPONENTS 1: MODERN APPLE BOLD CLOCK (no border ring) */
+    /* MODULAR SUBCOMPONENTS 1: SIMPLE BOLD CLOCK — hour:minute + AM/PM only */
     .clock-wrapper {
         display: flex;
         flex-direction: column;
@@ -125,52 +125,35 @@ html {
         letter-spacing: -2px;
     }
 
-    #apple-date {
-        font-size: 1rem;
+    #apple-ampm {
+        font-size: 1.1rem;
         font-weight: 700;
         color: #ff453a;
         margin-top: 6px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
+        letter-spacing: 2px;
     }
 
-    /* MODULAR SUBCOMPONENTS 2: ROTARY ANDROID DIAL TIMER */
-    .pomo-rotary-container {
-        position: relative;
+    /* MODULAR SUBCOMPONENTS 2: SIMPLE COUNTDOWN TIMER (plain digits, no drag) */
+    .simple-timer-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
-    .dial-outer-ring {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        border: 3px dashed rgba(10, 132, 255, 0.3);
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: grab;
-    }
-
-    #pomo-time {
-        font-size: 2.4rem;
+    .simple-timer-wrapper>div:first-child {
+        font-size: 2.6rem;
         font-weight: 300;
         color: #0a84ff;
-        position: absolute;
-        z-index: 5;
-        pointer-events: none;
+        font-variant-numeric: tabular-nums;
     }
 
-    .pomo-icon-controls {
-        position: absolute;
-        bottom: 10px;
+    .timer-controls {
+        margin-top: 12px;
         display: flex;
         justify-content: center;
-        width: 100%;
     }
 
     .icon-btn {
@@ -186,7 +169,7 @@ html {
         align-items: center;
     }
 
-    /* MODULAR SUBCOMPONENTS 3: WEATHER PLACEHOLDER */
+    /* MODULAR SUBCOMPONENTS 3: WEATHER (live OpenWeatherMap) */
     .weather-wrapper {
         display: flex;
         flex-direction: column;
@@ -216,43 +199,45 @@ html {
         padding: 0 8px;
     }
 
-    /* MODULAR SUBCOMPONENTS 4: NOTES SHORTCUT */
-    .notes-wrapper {
+    /* MODULAR SUBCOMPONENTS 4: VIRTUAL PET (VS Code Pets style companion) */
+    .pet-wrapper {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         width: 100%;
         height: 100%;
+    }
+
+    .pet-scene {
+        width: 100%;
+        height: 70%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pet-sprite {
+        position: absolute;
+        bottom: 10px;
+        left: 20px;
         color: #ffd60a;
+        transition: transform 0.9s ease-in-out;
     }
 
-    .notes-wrapper span {
-        margin-top: 6px;
-        font-size: 0.75rem;
-        color: #aeaeb2;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        text-align: center;
-        padding: 0 8px;
+    .pet-sprite.mood-napping {
+        opacity: 0.55;
     }
 
-    /* MODULAR SUBCOMPONENTS 5: BATTERY INDICATOR */
-    .battery-wrapper {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 100%;
+    .pet-sprite.mood-happy {
         color: #30d158;
     }
 
-    .battery-pct {
-        font-size: 1.9rem;
-        font-weight: 700;
-        color: #ffffff;
-        margin-top: 6px;
+    .pet-label {
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: #8e8e93;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
 
     /* IOS SHEET STYLE DRAWER COMPONENT */
