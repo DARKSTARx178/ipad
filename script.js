@@ -20,6 +20,13 @@ function saveState() {
     localStorage.setItem('sb_blocks', JSON.stringify(state.blocks));
 }
 
+// Icons used for widgets rendered dynamically into the grid
+var WIDGET_ICONS = {
+    weather: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
+    notes: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z" stroke-linejoin="round"/><path d="M15 3v4h4M9 12h6M9 16h6" stroke-linecap="round"/></svg>',
+    battery: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="8" rx="2" stroke-linejoin="round"/><path d="M21 10.5v3" stroke-linecap="round"/></svg>'
+};
+
 // ========================================================
 // ORIENTATION A: LANDSCAPE METRIC SYSTEMS
 // ========================================================
@@ -34,9 +41,18 @@ function renderDashboardGrid() {
         slot.id = 'slot-' + wData.id;
 
         if (wData.type === 'clock') {
-            slot.innerHTML = '<div class="clock-wrapper"><div class="second-perimeter-track" id="watch-border"></div><div id="apple-time">00:00</div><div id="apple-date">LOADING...</div></div>';
+            slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">00:00</div><div id="apple-date">LOADING...</div></div>';
         } else if (wData.type === 'pomodoro') {
-            slot.innerHTML = '<div class="pomo-rotary-container"><div class="dial-outer-ring" id="rotary-ring"></div><div id="pomo-time">25:00</div><div class="pomo-icon-controls"><button class="icon-btn" id="pomo-play-btn">▶</button><button class="icon-btn" id="pomo-reset-btn">🔄</button></div></div>';
+            slot.innerHTML = '<div class="pomo-rotary-container"><div class="dial-outer-ring" id="rotary-ring"></div><div id="pomo-time">25:00</div><div class="pomo-icon-controls"><button class="icon-btn" id="pomo-play-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><button class="icon-btn" id="pomo-reset-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9A7 7 0 0 1 19 9M18.5 15a7 7 0 0 1-13.5 0" stroke-linecap="round"/></svg></button></div></div>';
+        } else if (wData.type === 'weather') {
+            slot.className += ' compact';
+            slot.innerHTML = '<div class="weather-wrapper">' + WIDGET_ICONS.weather + '<div class="weather-temp">--°</div><div class="weather-label">No data source</div></div>';
+        } else if (wData.type === 'notes') {
+            slot.className += ' compact';
+            slot.innerHTML = '<div class="notes-wrapper">' + WIDGET_ICONS.notes + '<span>Switch to Portrait</span></div>';
+        } else if (wData.type === 'battery') {
+            slot.className += ' compact';
+            slot.innerHTML = '<div class="battery-wrapper">' + WIDGET_ICONS.battery + '<div class="battery-pct">--%</div></div>';
         }
         grid.appendChild(slot);
     });
@@ -44,9 +60,10 @@ function renderDashboardGrid() {
     // Re-bind mechanical listeners
     initClockEngine();
     initRotaryTimerEngine();
+    initBatteryEngine();
 }
 
-// 1. Apple Watch Style Perimeter Tracking Clock Outline
+// 1. Apple Bold Clock (no border ring)
 function initClockEngine() {
     function tick() {
         var now = new Date();
@@ -57,14 +74,6 @@ function initClockEngine() {
         var dateEl = document.getElementById('apple-date');
         if (timeEl) timeEl.textContent = timeStr;
         if (dateEl) dateEl.textContent = dateStr;
-
-        // Moving border sequence
-        var borderEl = document.getElementById('watch-border');
-        if (borderEl) {
-            var seconds = now.getSeconds();
-            var pct = (seconds / 60) * 360;
-            borderEl.style.borderImage = 'linear-gradient(' + pct + 'deg, #ff453a, #0a84ff) 1';
-        }
     }
     setInterval(tick, 1000);
     tick();
@@ -125,9 +134,7 @@ function initRotaryTimerEngine() {
             if (pomoTimer) {
                 clearInterval(pomoTimer);
                 pomoTimer = null;
-                playBtn.textContent = '▶';
             } else {
-                playBtn.textContent = '⏸';
                 pomoTimer = setInterval(function () {
                     if (pomoDuration > 0) {
                         pomoDuration--;
@@ -138,7 +145,7 @@ function initRotaryTimerEngine() {
                         display.textContent = mins + ':' + secs;
                     } else {
                         clearInterval(pomoTimer);
-                        alert('Session Closed!');
+                        pomoTimer = null;
                     }
                 }, 1000);
             }
@@ -151,12 +158,27 @@ function initRotaryTimerEngine() {
             pomoTimer = null;
             pomoDuration = 1500;
             display.textContent = '25:00';
-            if (playBtn) playBtn.textContent = '▶';
         });
     }
 }
 
-// 3. Apple Widget Gallery Sheet Gestures
+// 3. Battery widget (uses navigator.getBattery where the browser supports it)
+function initBatteryEngine() {
+    var pctEl = document.querySelector('.battery-pct');
+    if (!pctEl) return;
+
+    if (navigator.getBattery) {
+        navigator.getBattery().then(function (battery) {
+            function update() {
+                pctEl.textContent = Math.round(battery.level * 100) + '%';
+            }
+            update();
+            battery.addEventListener('levelchange', update);
+        });
+    }
+}
+
+// 4. Apple Widget Gallery Sheet Gestures
 function initDrawerMechanics() {
     var surface = document.getElementById('landscape-view');
     var drawer = document.getElementById('widget-drawer');
@@ -179,12 +201,10 @@ function initDrawerMechanics() {
     for (var i = 0; i < cards.length; i++) {
         cards[i].addEventListener('click', function () {
             var type = this.getAttribute('data-widget');
-            if (state.widgets.length < 4) {
+            if (state.widgets.length < 8) {
                 state.widgets.push({ id: 'w_' + Date.now(), type: type });
                 saveState();
                 renderDashboardGrid();
-            } else {
-                alert('Dashboard Matrix grid allocation capacity reached!');
             }
             drawer.className = 'drawer-panel';
         });
@@ -283,21 +303,43 @@ function createBlockNode(data) {
     }, false);
 }
 
-// Corner Action FAB UI popup orchestration
+// Corner Action FAB: opens an anchored popup beside the button with a scale/fade transition
 function initFABController() {
     var trigger = document.getElementById('fab-trigger');
     var popup = document.getElementById('fab-popup');
     if (!trigger) return;
 
-    trigger.addEventListener('click', function () { popup.style.display = 'flex'; });
-    document.getElementById('fab-close').addEventListener('click', function () { popup.style.display = 'none'; });
+    var isOpen = false;
+
+    function closePopup() {
+        isOpen = false;
+        popup.className = 'fab-popup';
+        trigger.className = 'action-fab';
+    }
+
+    function openPopup() {
+        isOpen = true;
+        popup.className = 'fab-popup open';
+        trigger.className = 'action-fab active';
+    }
+
+    trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (isOpen) { closePopup(); } else { openPopup(); }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (isOpen && !e.target.closest('#fab-popup') && !e.target.closest('#fab-trigger')) {
+            closePopup();
+        }
+    });
 
     document.getElementById('fab-add-note').addEventListener('click', function () {
         var block = { id: 'b_' + Date.now(), type: 'note', x: 60, y: 100, text: 'New Note card...' };
         state.blocks.push(block);
         saveState();
         createBlockNode(block);
-        popup.style.display = 'none';
+        closePopup();
     });
 
     document.getElementById('fab-add-todo').addEventListener('click', function () {
@@ -305,7 +347,7 @@ function initFABController() {
         state.blocks.push(block);
         saveState();
         createBlockNode(block);
-        popup.style.display = 'none';
+        closePopup();
     });
 }
 

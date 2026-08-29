@@ -52,6 +52,7 @@ html {
         height: 100vh;
         padding: 10px;
         background: #000000;
+        align-content: flex-start;
     }
 
     /* Core modular widget slot containers */
@@ -65,7 +66,6 @@ html {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        transition: transform 0.2s ease;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
@@ -75,7 +75,12 @@ html {
         height: calc(50vh - 20px);
     }
 
-    /* MODULAR SUBCOMPONENTS 1: MODERN APPLE BOLD CLOCK */
+    /* Smaller widgets get a quarter-height slot so more fit per screen */
+    .w-size-2x1.compact {
+        height: calc(25vh - 20px);
+    }
+
+    /* MODULAR SUBCOMPONENTS 1: MODERN APPLE BOLD CLOCK (no border ring) */
     .clock-wrapper {
         display: flex;
         flex-direction: column;
@@ -83,13 +88,11 @@ html {
         align-items: center;
         width: 100%;
         height: 100%;
-        position: relative;
     }
 
     #apple-time {
         font-size: 6.8rem;
         font-weight: 800;
-        /* True Bolder Modern Apple Lockscreen Weight */
         color: #ffffff;
         line-height: 1;
         letter-spacing: -2px;
@@ -102,19 +105,6 @@ html {
         margin-top: 6px;
         letter-spacing: 1px;
         text-transform: uppercase;
-    }
-
-    /* Apple-Watch Style Border Progress Tracking Outline Ring */
-    .second-perimeter-track {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: 3.5px solid transparent;
-        border-radius: 28px;
-        pointer-events: none;
-        box-sizing: border-box;
     }
 
     /* MODULAR SUBCOMPONENTS 2: ROTARY ANDROID DIAL TIMER */
@@ -164,19 +154,83 @@ html {
         height: 36px;
         border-radius: 50%;
         margin: 0 10px;
-        font-size: 1.1rem;
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
+    /* MODULAR SUBCOMPONENTS 3: WEATHER PLACEHOLDER */
+    .weather-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        color: #9ecbff;
+    }
+
+    .weather-wrapper svg {
+        margin-bottom: 6px;
+    }
+
+    .weather-temp {
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .weather-label {
+        font-size: 0.85rem;
+        color: #8e8e93;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* MODULAR SUBCOMPONENTS 4: NOTES SHORTCUT */
+    .notes-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        color: #ffd60a;
+    }
+
+    .notes-wrapper span {
+        margin-top: 6px;
+        font-size: 0.85rem;
+        color: #aeaeb2;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* MODULAR SUBCOMPONENTS 5: BATTERY INDICATOR */
+    .battery-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        color: #30d158;
+    }
+
+    .battery-pct {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-top: 6px;
+    }
+
     /* IOS SHEET STYLE DRAWER COMPONENT */
     .drawer-panel {
         position: fixed;
-        bottom: -280px;
+        bottom: -320px;
         left: 0;
         width: 100%;
-        height: 260px;
+        height: 300px;
         background-color: #1c1c1e;
         border-top-left-radius: 24px;
         border-top-right-radius: 24px;
@@ -208,15 +262,17 @@ html {
     .drawer-items {
         display: flex;
         flex-direction: row;
-        gap: 20px;
+        flex-wrap: wrap;
+        gap: 16px;
         margin-top: 10px;
+        justify-content: center;
     }
 
     .drawer-item-card {
         background-color: #2c2c2e;
         padding: 14px;
         border-radius: 16px;
-        width: 130px;
+        width: 110px;
         text-align: center;
         display: flex;
         flex-direction: column;
@@ -224,10 +280,10 @@ html {
     }
 
     .mini-preview {
-        font-size: 1.5rem;
         margin-bottom: 8px;
-        font-weight: bold;
         color: #0a84ff;
+        display: flex;
+        justify-content: center;
     }
 
     .drawer-item-card span {
@@ -237,7 +293,7 @@ html {
 }
 
 /* ========================================================
-   PORTRAIT: FULLSCREEN UNIFIED DRAWING CANVAS 
+   PORTRAIT: FULLSCREEN UNIFIED DRAWING CANVAS
    ======================================================== */
 @media (orientation: portrait) {
     #portrait-view {
@@ -252,7 +308,8 @@ html {
         width: 100%;
         height: 100%;
         position: relative;
-        background-image: radial-gradient(#16161a 1.5px, transparent 1.5px);
+        /* White dot grid */
+        background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1.5px, transparent 1.5px);
         background-size: 28px 28px;
     }
 
@@ -334,61 +391,65 @@ html {
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background-color: #0a84ff;
+        background: linear-gradient(145deg, #2a9bff, #0a6fe0);
         color: white;
         border: none;
-        font-size: 2.2rem;
-        font-weight: 300;
         z-index: 500;
-        box-shadow: 0 4px 16px rgba(10, 132, 255, 0.4);
-    }
-
-    .fab-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        z-index: 600;
+        display: flex;
         justify-content: center;
         align-items: center;
+        box-shadow: 0 6px 18px rgba(10, 132, 255, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+        transition: transform 0.15s ease;
     }
 
-    .fab-modal-content {
-        background-color: #1c1c1e;
-        padding: 20px;
-        border-radius: 20px;
-        width: 280px;
-        border: 1px solid #2c2c2e;
-        text-align: center;
+    .action-fab.active {
+        transform: rotate(45deg);
     }
 
-    .fab-modal-content h4 {
-        margin-bottom: 15px;
-        font-weight: 500;
-        color: #aeaeb2;
+    /* Popup anchored beside the FAB, not a full-screen modal */
+    .fab-popup {
+        position: fixed;
+        bottom: 30px;
+        right: 95px;
+        z-index: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        opacity: 0;
+        transform: translateX(12px) scale(0.92);
+        transform-origin: bottom right;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+    }
+
+    .fab-popup.open {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        pointer-events: auto;
     }
 
     .menu-action-item {
-        width: 100%;
-        padding: 14px;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
         border: none;
-        border-radius: 12px;
-        font-size: 1rem;
+        border-radius: 14px;
+        font-size: 0.95rem;
         font-weight: 600;
-        background-color: #2c2c2e;
+        background-color: #1c1c1e;
         color: white;
-        text-align: left;
+        white-space: nowrap;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+        border: 1px solid #2c2c2e;
     }
 
-    .cancel-item {
-        background-color: transparent;
-        color: #ff453a;
-        text-align: center;
-        margin-bottom: 0;
+    .menu-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a84ff;
     }
 
     /* Interactive Drop Trash Container block */
@@ -401,14 +462,11 @@ html {
         border-radius: 50%;
         background-color: #1c1c1e;
         border: 1px solid #ff453a;
+        color: #ff453a;
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 500;
         transition: transform 0.2s ease;
-    }
-
-    .trash-icon {
-        font-size: 1.5rem;
     }
 }
