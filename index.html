@@ -3,70 +3,65 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>StandBy Workspace</title>
+    <title>StandBy Canvas OS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- LANDSCAPE MODE: APPLE STANDBY METRIC WIDGET DISPLAY -->
+    <!-- LANDSCAPE MODE: 4x2 MODULAR WIDGET SURFACE -->
     <div id="landscape-view" class="view">
-        <div class="standby-container">
-
-            <!-- STANDBY SIDE 1: GIANT CLOCK TYPOGRAPHY -->
-            <div class="standby-widget" id="standby-clock">
-                <div id="apple-time">00:00</div>
-                <div id="apple-date">LOADING...</div>
-            </div>
-
-            <!-- STANDBY SIDE 2: MINIMALIST POMODORO CONTROLLER -->
-            <div class="standby-widget" id="standby-pomodoro">
-                <div class="pomo-wrapper">
-                    <div id="pomo-time">25:00</div>
-                    <div class="pomo-actions">
-                        <button id="pomo-start-btn">Start</button>
-                        <button id="pomo-reset-btn">Reset</button>
-                    </div>
-                </div>
-            </div>
-
+        <div id="grid-surface" class="surface-matrix">
+            <!-- Widgets will be injected dynamically into grid spaces via JS -->
         </div>
 
-        <!-- BACKGROUND CUSTOMIZER PANEL (Triggered via Long Press) -->
-        <div id="edit-modal" class="modal">
-            <div class="modal-content">
-                <h3>Theme Customizer</h3>
-                <label>Select Background Theme:</label>
-                <select id="theme-selector">
-                    <option value="pitch-black">Pure Pitch Black</option>
-                    <option value="midnight-blue">Midnight Velvet Blue</option>
-                    <option value="aurora-purple">Deep Cosmic Purple</option>
-                    <option value="charcoal-fade">Gentle Charcoal Gradient</option>
-                </select>
-                <div class="modal-actions">
-                    <button id="save-settings-btn">Apply Theme</button>
-                    <button id="close-modal-btn">Cancel</button>
+        <!-- IOS INSPIRED GALLERY SHEET WIDGET DRAWER (Triggered on Long Press) -->
+        <div id="widget-drawer" class="drawer-panel">
+            <div class="drawer-header">
+                <div class="drawer-handle"></div>
+                <h4>Add Widget Component</h4>
+            </div>
+            <div class="drawer-items">
+                <div class="drawer-item-card" data-widget="clock">
+                    <div class="mini-preview">09:41</div>
+                    <span>Sleek Clock (2x1)</span>
+                </div>
+                <div class="drawer-item-card" data-widget="pomodoro">
+                    <div class="mini-preview">⏱</div>
+                    <span>Rotary Timer (2x1)</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PORTRAIT MODE: MIRO-STYLE FREEFORM PLANNING CANVAS -->
+    <!-- PORTRAIT MODE: FULLSCREEN NO-NAV CANVAS PLANNER -->
     <div id="portrait-view" class="view">
-        <div class="board-header">
-            <h2>Freeform Board</h2>
-            <div class="header-actions">
-                <button id="add-todo-btn">+ Add To-Do Item</button>
-                <button id="add-note-btn">+ Add Sticky Note</button>
-            </div>
+
+        <!-- FREEFORM INFINITE CANVAS MAP -->
+        <div id="canvas">
+            <!-- Generated draggable note items go here -->
         </div>
 
-        <!-- UNIFIED INFINITE DRAGGABLE CANVAS FOR BOTH NOTES & TASKS -->
-        <div id="canvas">
-            <!-- Generated blocks go here -->
+        <!-- FLOATING DESTRUCTIVE TRASH DISPOSAL ZONE -->
+        <div id="trash-bin" class="floating-trash">
+            <span class="trash-icon">🗑️</span>
+        </div>
+
+        <!-- SLEEK ADD CONTROLLER CORNER BUTTON -->
+        <button id="fab-trigger" class="action-fab">+</button>
+
+        <!-- FLOATING UTILITY SELECTION COMPONENT MENU -->
+        <div id="fab-popup" class="fab-modal">
+            <div class="fab-modal-content">
+                <h4>Create Component</h4>
+                <button id="fab-add-note" class="menu-action-item">📝 Sticky Note</button>
+                <button id="fab-add-todo" class="menu-action-item">✅ To-Do Checklist</button>
+                <button id="fab-close" class="menu-action-item cancel-item">Cancel</button>
+            </div>
         </div>
     </div>
 
