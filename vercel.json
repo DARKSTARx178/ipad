@@ -1,5 +1,5 @@
 {
-    "outputDirectory": "dist",
+    "outputDirectory": "src/app",
     "installCommand": "npm install",
     "devCommand": "npx expo",
     "cleanUrls": true,
