@@ -12,7 +12,7 @@ html {
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
     overflow: hidden;
-    background-color: #000000;
+    background-color: #08080a;
     color: #ffffff;
 }
 
@@ -23,98 +23,189 @@ html {
 }
 
 /* ========================================================
-   LANDSCAPE WIDGET LAYOUT RULES
+   GRIDFINITY SYSTEM LAYOUT DESIGN
    ======================================================== */
 @media (orientation: landscape) {
     #landscape-view {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #000000;
-        padding: 20px;
+        background-color: #0c0d12;
         width: 100%;
         height: 100%;
     }
 
-    .widget-grid {
+    /* Gridfinity Master Storage Frame tray setup */
+    .gridfinity-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
-        width: 100%;
-        max-width: 1024px;
-        height: 80%;
+        gap: 16px;
+        width: 95%;
+        max-width: 960px;
+        height: 85%;
+        background-color: #17181f;
+        /* Base tray plate color */
+        padding: 16px;
+        border-radius: 28px;
+        box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.5);
+        border: 2px solid #222430;
     }
 
-    .card {
-        background-color: #1c1c1e;
-        border-radius: 22px;
-        padding: 24px;
+    /* Dimensional 3D Gridfinity Bin structures */
+    .gridfinity-bin {
+        background-color: #282a36;
+        border-radius: 16px;
+        position: relative;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.05);
+        border-bottom: 5px solid #1a1b24;
+        /* Injection block structural depth bevel */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Structural interlocking stack lip definition */
+    .bin-lip {
+        height: 8px;
+        background-color: #1f212b;
+        border-bottom: 1px solid #12131a;
+        width: 100%;
+    }
+
+    .bin-content {
+        flex: 1;
+        padding: 20px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        border: 1px solid #2c2c2e;
-        overflow: hidden;
-        position: relative;
     }
 
     /* Apple Clock Typography */
     #apple-time {
-        font-size: 4.5rem;
+        font-size: 4.8rem;
         font-weight: 300;
         color: #ffffff;
-        letter-spacing: -1px;
+        letter-spacing: -2px;
     }
 
     #apple-date {
         font-size: 1.1rem;
-        font-weight: 500;
+        font-weight: 600;
         color: #ff453a;
         margin-top: 4px;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
     }
 
-    /* Spotify Object Scaling */
-    #spotify-container,
-    iframe {
+    /* Safe custom CSS Spotify player element container */
+    .spotify-card {
+        width: 100%;
+        justify-content: space-between !important;
+        padding: 14px 20px 20px !important;
+    }
+
+    .spotify-header {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        color: #1ed760;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .spot-icon {
+        width: 14px;
+        height: 14px;
+        background-color: #1ed760;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    .album-art-wrapper {
+        width: 110px;
+        height: 110px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #playlist-art {
         width: 100%;
         height: 100%;
+        object-fit: cover;
+    }
+
+    .track-info {
+        text-align: center;
+        margin: 8px 0;
+    }
+
+    #playlist-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    #track-status {
+        font-size: 0.8rem;
+        color: #a7a7a7;
+        margin-top: 2px;
+    }
+
+    .player-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .ctrl-btn {
+        background: transparent;
         border: none;
-        border-radius: 12px;
+        color: #b3b3b3;
+        font-size: 1.2rem;
+        margin: 0 14px;
+        cursor: pointer;
+    }
+
+    .play-btn {
+        color: #ffffff;
+        font-size: 1.6rem;
     }
 
     /* Pomodoro Interface */
     .pomo-container h3 {
-        font-size: 1.2rem;
-        color: #eaeaea;
-        margin-bottom: 12px;
+        font-size: 1.1rem;
+        color: #a7a7a7;
+        margin-bottom: 8px;
     }
 
     #pomo-time {
-        font-size: 3.5rem;
-        font-weight: 400;
-        margin-bottom: 16px;
+        font-size: 3.8rem;
+        font-weight: 300;
+        margin-bottom: 12px;
         font-variant-numeric: tabular-nums;
     }
 
     .pomo-controls button {
-        background-color: #303032;
+        background-color: #3e4154;
         border: none;
         color: white;
-        padding: 10px 20px;
+        padding: 10px 18px;
         border-radius: 12px;
         margin: 0 6px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
-    .pomo-controls button#pomo-start-btn {
+    #pomo-start-btn {
         background-color: #34c759;
     }
 
-    /* Long Press Editor Modal Styles */
+    /* Editor Configurator Styles */
     .modal {
         display: none;
         position: fixed;
@@ -122,32 +213,38 @@ html {
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
+        background-color: rgba(0, 0, 0, 0.75);
         z-index: 100;
         justify-content: center;
         align-items: center;
     }
 
     .modal-content {
-        background-color: #1c1c1e;
+        background-color: #282a36;
         padding: 30px;
         border-radius: 20px;
         width: 400px;
-        border: 1px solid #2c2c2e;
+        border: 1px solid #3e4154;
     }
 
     .modal-content h3 {
         margin-bottom: 15px;
     }
 
+    .modal-content label {
+        font-size: 0.9rem;
+        color: #a7a7a7;
+    }
+
     .modal-content input {
         width: 100%;
         padding: 12px;
-        margin: 10px 0 20px;
-        background-color: #2c2c2e;
+        margin: 6px 0 18px;
+        background-color: #1f212b;
         border: none;
         border-radius: 8px;
         color: white;
+        outline: none;
     }
 
     .modal-actions button {
@@ -162,6 +259,11 @@ html {
         background-color: #0a84ff;
         color: white;
     }
+
+    #close-modal-btn {
+        background-color: #3e4154;
+        color: white;
+    }
 }
 
 /* ========================================================
@@ -171,22 +273,22 @@ html {
     #portrait-view {
         display: flex;
         flex-direction: column;
-        background-color: #000000;
         width: 100%;
         height: 100%;
+        background-color: #0c0d12;
     }
 
     .board-header {
-        background-color: #1c1c1e;
+        background-color: #17181f;
         padding: 16px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #2c2c2e;
+        border-bottom: 1px solid #222430;
     }
 
     .header-actions button {
-        background-color: #2c2c2e;
+        background-color: #282a36;
         color: #0a84ff;
         border: none;
         padding: 8px 16px;
@@ -208,11 +310,10 @@ html {
         height: calc(100% - 70px);
     }
 
-    /* Fixed Native To-Do System Panel */
     .todo-panel {
         width: 260px;
-        background-color: #1c1c1e;
-        border-right: 1px solid #2c2c2e;
+        background-color: #17181f;
+        border-right: 1px solid #222430;
         padding: 20px;
         display: flex;
         flex-direction: column;
@@ -221,7 +322,7 @@ html {
     .todo-panel h3 {
         font-size: 1.1rem;
         margin-bottom: 15px;
-        color: #8e8e93;
+        color: #727482;
     }
 
     #todo-list {
@@ -232,7 +333,7 @@ html {
     .todo-item {
         display: flex;
         align-items: center;
-        background-color: #2c2c2e;
+        background-color: #282a36;
         padding: 12px;
         border-radius: 10px;
         margin-bottom: 10px;
@@ -264,15 +365,14 @@ html {
 
     .todo-item.done input {
         text-decoration: line-through;
-        color: #8e8e93;
+        color: #727482;
     }
 
-    /* Interactive Miro Canvas Layout */
     #canvas {
         flex: 1;
         position: relative;
-        background-color: #121214;
-        background-image: radial-gradient(#2c2c2e 1px, transparent 1px);
+        background-color: #0f1015;
+        background-image: radial-gradient(#222430 1px, transparent 1px);
         background-size: 24px 24px;
     }
 
@@ -281,7 +381,7 @@ html {
         width: 150px;
         height: 150px;
         background-color: #ffe66d;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         padding: 12px;
         border-radius: 14px;
         touch-action: none;

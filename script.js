@@ -1,25 +1,27 @@
 // ========================================================
-// CORE DRIVER STATE CONTROLLERS (Saved directly to local device)
+// CORE SAVED APPLICATION STATE DOCK
 // ========================================================
 var state = {
-    spotifyId: localStorage.getItem('p_spotifyId') || '4PTG3Z6ehGkBFQH6sgwWjY',
-    todos: JSON.parse(localStorage.getItem('p_todos')) || [
+    playlistName: localStorage.getItem('g_playlistName') || 'lofi chill',
+    artworkUrl: localStorage.getItem('g_artworkUrl') || 'https://unsplash.com',
+    todos: JSON.parse(localStorage.getItem('g_todos')) || [
         { id: 't1', text: 'Plan morning layout routines', done: false },
         { id: 't2', text: 'Clean coffee equipment', done: true }
     ],
-    notes: JSON.parse(localStorage.getItem('p_notes')) || [
+    notes: JSON.parse(localStorage.getItem('g_notes')) || [
         { id: 'n1', x: 30, y: 50, text: 'Brainstorm workspace adjustments' }
     ]
 };
 
 function saveState() {
-    localStorage.setItem('p_spotifyId', state.spotifyId);
-    localStorage.setItem('p_todos', JSON.stringify(state.todos));
-    localStorage.setItem('p_notes', JSON.stringify(state.notes));
+    localStorage.setItem('g_playlistName', state.playlistName);
+    localStorage.setItem('g_artworkUrl', state.artworkUrl);
+    localStorage.setItem('g_todos', JSON.stringify(state.todos));
+    localStorage.setItem('g_notes', JSON.stringify(state.notes));
 }
 
 // ========================================================
-// CLOCK LOGIC (Precision Zone Fixed Parameter Wrapper)
+// SINGAPORE ORIENTED PRECISION CLOCK LOGIC
 // ========================================================
 function updateClock() {
     var now = new Date();
@@ -46,18 +48,19 @@ function updateClock() {
 }
 
 // ========================================================
-// SPOTIFY PLAYER ASYNC INTEGRATION BLOCK
+// SAFE DYNAMIC MOCK PLAYER CONTROLLER (Bypasses iPad Popups)
 // ========================================================
-function loadSpotifyPlayer() {
-    var container = document.getElementById('spotify-container');
-    if (!container) return;
-    container.innerHTML = '<iframe src="https://spotify.com' + state.spotifyId + '?utm_source=generator&theme=0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+function loadMockPlayer() {
+    var titleEl = document.getElementById('playlist-title');
+    var artEl = document.getElementById('playlist-art');
+    if (titleEl) titleEl.textContent = state.playlistName;
+    if (artEl) artEl.src = state.artworkUrl;
 }
 
 // ========================================================
-// POMODORO TIMER COUNTDOWN SYSTEM
+// POMODORO MECHANICAL COUNTDOWN CORE
 // ========================================================
-var pomoDuration = 1500; // 25 Minutes
+var pomoDuration = 1500;
 var pomoTimer = null;
 function initPomodoro() {
     var startBtn = document.getElementById('pomo-start-btn');
@@ -102,10 +105,10 @@ function initPomodoro() {
 }
 
 // ========================================================
-// LONG PRESS TO EDIT CONTROLS LOGIC
+// GRIDFINITY PRESS-AND-HOLD MANAGER SHEET GESTURE
 // ========================================================
 function initEditGestures() {
-    var grid = document.querySelector('.widget-grid');
+    var grid = document.querySelector('.gridfinity-container');
     var modal = document.getElementById('edit-modal');
     var longPressTimer;
 
@@ -114,18 +117,18 @@ function initEditGestures() {
     grid.addEventListener('touchstart', function () {
         longPressTimer = setTimeout(function () {
             modal.style.display = 'flex';
-            document.getElementById('spotify-id-input').value = state.spotifyId;
+            document.getElementById('playlist-name-input').value = state.playlistName;
+            document.getElementById('artwork-url-input').value = state.artworkUrl;
         }, 800);
     });
 
-    grid.addEventListener('touchend', function () {
-        clearTimeout(longPressTimer);
-    });
+    grid.addEventListener('touchend', function () { clearTimeout(longPressTimer); });
 
     document.getElementById('save-settings-btn').addEventListener('click', function () {
-        state.spotifyId = document.getElementById('spotify-id-input').value;
+        state.playlistName = document.getElementById('playlist-name-input').value;
+        state.artworkUrl = document.getElementById('artwork-url-input').value;
         saveState();
-        loadSpotifyPlayer();
+        loadMockPlayer();
         modal.style.display = 'none';
     });
 
@@ -135,7 +138,7 @@ function initEditGestures() {
 }
 
 // ========================================================
-// FIXED TO-DO CONTROLLER INTERACTION SYSTEM
+// FIXED PLANNER LIST IMPLEMENTATIONS
 // ========================================================
 function renderTodos() {
     var list = document.getElementById('todo-list');
@@ -177,16 +180,14 @@ if (addTodoBtn) {
 }
 
 // ========================================================
-// FIXED PORTRAIT STICKY NOTE HANDLERS (iOS 9 Textarea Fix)
+// RE-BOUND INTERACTIVE DRAG STICKY NOTES LOGIC
 // ========================================================
 var canvas = document.getElementById('canvas');
 
 function renderNotes() {
     if (!canvas) return;
     canvas.innerHTML = '';
-    state.notes.forEach(function (noteData) {
-        createNoteElement(noteData);
-    });
+    state.notes.forEach(function (noteData) { createNoteElement(noteData); });
 }
 
 function createNoteElement(data) {
@@ -202,41 +203,32 @@ function createNoteElement(data) {
 
     textarea.addEventListener('change', function (e) {
         var target = state.notes.find(function (n) { return n.id === data.id; });
-        if (target) {
-            target.text = e.target.value;
-            saveState();
-        }
+        if (target) { target.text = e.target.value; saveState(); }
     });
 
     var active = false;
     var currentX = data.x, currentY = data.y, initialX, initialY;
-    var xOffset = data.x;
-    var yOffset = data.y;
+    var xOffset = data.x, yOffset = data.y;
 
     note.addEventListener('touchstart', function (e) {
         if (document.activeElement === textarea) return;
-        initialX = e.touches[0].clientX - xOffset;
-        initialY = e.touches[0].clientY - yOffset;
+        initialX = e.touches.clientX - xOffset;
+        initialY = e.touches.clientY - yOffset;
         active = true;
     }, false);
 
     note.addEventListener('touchend', function () {
         active = false;
         var target = state.notes.find(function (n) { return n.id === data.id; });
-        if (target) {
-            target.x = currentX;
-            target.y = currentY;
-            saveState();
-        }
+        if (target) { target.x = currentX; target.y = currentY; saveState(); }
     }, false);
 
     note.addEventListener('touchmove', function (e) {
         if (active) {
             e.preventDefault();
-            currentX = e.touches[0].clientX - initialX;
-            currentY = e.touches[0].clientY - initialY;
-            xOffset = currentX;
-            yOffset = currentY;
+            currentX = e.touches.clientX - initialX;
+            currentY = e.touches.clientY - initialY;
+            xOffset = currentX; yOffset = currentY;
             note.style.left = currentX + 'px';
             note.style.top = currentY + 'px';
         }
@@ -253,13 +245,11 @@ if (addNoteBtn) {
     });
 }
 
-// ========================================================
-// INITIALIZER ROUTER
-// ========================================================
+// INITIALIZATION DRIVER
 window.onload = function () {
     setInterval(updateClock, 1000);
     updateClock();
-    loadSpotifyPlayer();
+    loadMockPlayer();
     initPomodoro();
     initEditGestures();
     renderTodos();

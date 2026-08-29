@@ -6,34 +6,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Desk Dashboard Pro</title>
+    <title>Gridfinity Deskboard Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- LANDSCAPE MODE: APPLE STYLE WIDGET DOCK -->
+    <!-- LANDSCAPE MODE: GRIDFINITY WIDGET COMPARTMENT BASE -->
     <div id="landscape-view" class="view">
-        <div class="widget-grid">
+        <div class="gridfinity-container">
 
-            <!-- WIDGET 1: APPLE SLEEK CLOCK -->
-            <div class="widget card" id="widget-clock">
-                <div class="clock-display">
+            <!-- BIN 1x1: APPLE METRIC TIME PIECE -->
+            <div class="gridfinity-bin" id="bin-clock">
+                <div class="bin-lip"></div>
+                <div class="bin-content clock-display">
                     <div id="apple-time">00:00</div>
                     <div id="apple-date">LOADING...</div>
                 </div>
             </div>
 
-            <!-- WIDGET 2: SPOTIFY IFRAME PLAYER EMBED -->
-            <div class="widget card" id="widget-spotify">
-                <div id="spotify-container">
-                    <!-- Injected dynamically via script -->
+            <!-- BIN 1x1: SAFE CUSTOM SPOTIFY EMBED BLOCK -->
+            <div class="gridfinity-bin" id="bin-spotify">
+                <div class="bin-lip"></div>
+                <div class="bin-content spotify-card">
+                    <div class="spotify-header">
+                        <div class="spot-icon"></div>
+                        <span>Spotify</span>
+                    </div>
+                    <div class="album-art-wrapper">
+                        <img id="playlist-art" src="https://unsplash.com" alt="Lofi Art">
+                    </div>
+                    <div class="track-info">
+                        <h4 id="playlist-title">lofi chill</h4>
+                        <p id="track-status">Now Playing</p>
+                    </div>
+                    <div class="player-controls">
+                        <button class="ctrl-btn">⏮</button>
+                        <button class="ctrl-btn play-btn">▶</button>
+                        <button class="ctrl-btn">⏭</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- WIDGET 3: POMODORO TIMER CORE -->
-            <div class="widget card" id="widget-pomodoro">
-                <div class="pomo-container">
+            <!-- BIN 1x1: POMODORO TIMER COMPARTMENT -->
+            <div class="gridfinity-bin" id="bin-pomodoro">
+                <div class="bin-lip"></div>
+                <div class="bin-content pomo-container">
                     <h3>Focus Session</h3>
                     <div id="pomo-time">25:00</div>
                     <div class="pomo-controls">
@@ -45,12 +63,14 @@
 
         </div>
 
-        <!-- PERSISTENT EDITING DASHBOARD MODAL -->
+        <!-- CONFIGURATOR HOLD SHEET -->
         <div id="edit-modal" class="modal">
             <div class="modal-content">
-                <h3>Widget Settings</h3>
-                <label>Spotify Track/Playlist Link ID:</label>
-                <input type="text" id="spotify-id-input" placeholder="e.g., 4PTG3Z6ehGkBFQH6sgwWjY">
+                <h3>Gridfinity Bin Manager</h3>
+                <label>Playlist Artwork Image URL:</label>
+                <input type="text" id="artwork-url-input" placeholder="Paste image address...">
+                <label>Playlist Name:</label>
+                <input type="text" id="playlist-name-input" placeholder="e.g., lofi chill">
                 <div class="modal-actions">
                     <button id="save-settings-btn">Save Layout</button>
                     <button id="close-modal-btn">Cancel</button>
@@ -59,7 +79,7 @@
         </div>
     </div>
 
-    <!-- PORTRAIT MODE: INTERACTIVE WHITEBOARD & EXPANDED TO-DO CONTROLLER -->
+    <!-- PORTRAIT MODE: INTERACTIVE WHITEBOARD PLANNER -->
     <div id="portrait-view" class="view">
         <div class="board-header">
             <h2>Workspace Planner</h2>
@@ -70,18 +90,11 @@
         </div>
 
         <div class="workspace-split">
-            <!-- FIXED SECTION: PERSISTENT TO-DO TASK TRACKER -->
             <div class="todo-panel">
                 <h3>Tasks</h3>
-                <ul id="todo-list">
-                    <!-- Dynamic tasks injection -->
-                </ul>
+                <ul id="todo-list"></ul>
             </div>
-
-            <!-- FREE FORM CANVAS: INTERACTIVE STICKY NOTATIONS -->
-            <div id="canvas">
-                <!-- Interactive draggable notes generated here -->
-            </div>
+            <div id="canvas"></div>
         </div>
     </div>
 
