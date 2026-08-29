@@ -2,12 +2,68 @@
 window.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
 
 // ========================================================
+// LANDSCAPE GRID CONFIG — 4 cols x 2 rows = 8 exact slots
+// ========================================================
+var GRID_COLS = 4;
+var GRID_ROWS = 2;
+var PAD = 16;
+var GAP = 16;
+var SLOT_W = 236;
+var SLOT_H = 360;
+
+function slotRect(slotIndex, span) {
+    var col = slotIndex % GRID_COLS;
+    var row = Math.floor(slotIndex / GRID_COLS);
+    return {
+        left: PAD + col * (SLOT_W + GAP),
+        top: PAD + row * (SLOT_H + GAP),
+        width: SLOT_W * span + GAP * (span - 1),
+        height: SLOT_H
+    };
+}
+
+function pointToSlot(x, y) {
+    var col = Math.round((x - PAD - SLOT_W / 2) / (SLOT_W + GAP));
+    var row = Math.round((y - PAD - SLOT_H / 2) / (SLOT_H + GAP));
+    col = Math.max(0, Math.min(GRID_COLS - 1, col));
+    row = Math.max(0, Math.min(GRID_ROWS - 1, row));
+    return row * GRID_COLS + col;
+}
+
+function isOccupied(slotIndex, excludeId) {
+    for (var i = 0; i < state.widgets.length; i++) {
+        var w = state.widgets[i];
+        if (w.id === excludeId) continue;
+        for (var k = 0; k < w.span; k++) {
+            if (w.slot + k === slotIndex) return true;
+        }
+    }
+    return false;
+}
+
+function findFreeSlot(span) {
+    for (var s = 0; s < GRID_COLS * GRID_ROWS; s++) {
+        var col = s % GRID_COLS;
+        if (col + span > GRID_COLS) continue;
+        var ok = true;
+        for (var k = 0; k < span; k++) {
+            if (isOccupied(s + k, null)) { ok = false; break; }
+        }
+        if (ok) return s;
+    }
+    return -1;
+}
+
+// ========================================================
 // MEMORY STATE CONTROLLERS
 // ========================================================
 var state = {
-    widgets: JSON.parse(localStorage.getItem('sb_widgets')) || [
-        { id: 'w1', type: 'clock' },
-        { id: 'w2', type: 'pomodoro' }
+    widgets: JSON.parse(localStorage.getItem('sb_widgets_v2')) || [
+        { id: 'w1', type: 'clock', span: 2, slot: 0 },
+        { id: 'w2', type: 'pomodoro', span: 2, slot: 2 },
+        { id: 'w3', type: 'weather', span: 1, slot: 4 },
+        { id: 'w4', type: 'notes', span: 1, slot: 5 },
+        { id: 'w5', type: 'battery', span: 1, slot: 6 }
     ],
     blocks: JSON.parse(localStorage.getItem('sb_blocks')) || [
         { id: 'b1', type: 'note', x: 50, y: 80, text: 'Tap note card content directly' },
@@ -16,54 +72,162 @@ var state = {
 };
 
 function saveState() {
-    localStorage.setItem('sb_widgets', JSON.stringify(state.widgets));
+    localStorage.setItem('sb_widgets_v2', JSON.stringify(state.widgets));
     localStorage.setItem('sb_blocks', JSON.stringify(state.blocks));
 }
 
-// Icons used for widgets rendered dynamically into the grid
 var WIDGET_ICONS = {
-    weather: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
-    notes: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z" stroke-linejoin="round"/><path d="M15 3v4h4M9 12h6M9 16h6" stroke-linecap="round"/></svg>',
-    battery: '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="8" rx="2" stroke-linejoin="round"/><path d="M21 10.5v3" stroke-linecap="round"/></svg>'
+    weather: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
+    notes: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z" stroke-linejoin="round"/><path d="M15 3v4h4M9 12h6M9 16h6" stroke-linecap="round"/></svg>',
+    battery: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="8" width="17" height="8" rx="2" stroke-linejoin="round"/><path d="M21 10.5v3" stroke-linecap="round"/></svg>'
 };
 
+var ICON_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
+var ICON_RESET = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9A7 7 0 0 1 19 9M18.5 15a7 7 0 0 1-13.5 0" stroke-linecap="round"/></svg>';
+
 // ========================================================
-// ORIENTATION A: LANDSCAPE METRIC SYSTEMS
+// ORIENTATION A: LANDSCAPE SLOT GRID
 // ========================================================
+var jiggleMode = false;
+var dragCtx = null;
+
 function renderDashboardGrid() {
     var grid = document.getElementById('grid-surface');
     if (!grid) return;
     grid.innerHTML = '';
 
     state.widgets.forEach(function (wData) {
+        var rect = slotRect(wData.slot, wData.span);
         var slot = document.createElement('div');
-        slot.className = 'widget-slot w-size-2x1';
+        slot.className = 'widget-slot' + (jiggleMode ? ' jiggle' : '');
         slot.id = 'slot-' + wData.id;
+        slot.style.left = rect.left + 'px';
+        slot.style.top = rect.top + 'px';
+        slot.style.width = rect.width + 'px';
+        slot.style.height = rect.height + 'px';
 
         if (wData.type === 'clock') {
             slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">00:00</div><div id="apple-date">LOADING...</div></div>';
         } else if (wData.type === 'pomodoro') {
-            slot.innerHTML = '<div class="pomo-rotary-container"><div class="dial-outer-ring" id="rotary-ring"></div><div id="pomo-time">25:00</div><div class="pomo-icon-controls"><button class="icon-btn" id="pomo-play-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button><button class="icon-btn" id="pomo-reset-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9A7 7 0 0 1 19 9M18.5 15a7 7 0 0 1-13.5 0" stroke-linecap="round"/></svg></button></div></div>';
+            slot.innerHTML = '<div class="pomo-rotary-container"><div class="dial-outer-ring" id="rotary-ring"></div><div id="pomo-time">25:00</div><div class="pomo-icon-controls"><button class="icon-btn" id="pomo-play-btn">' + ICON_PLAY + '</button><button class="icon-btn" id="pomo-reset-btn">' + ICON_RESET + '</button></div></div>';
         } else if (wData.type === 'weather') {
-            slot.className += ' compact';
             slot.innerHTML = '<div class="weather-wrapper">' + WIDGET_ICONS.weather + '<div class="weather-temp">--°</div><div class="weather-label">No data source</div></div>';
         } else if (wData.type === 'notes') {
-            slot.className += ' compact';
             slot.innerHTML = '<div class="notes-wrapper">' + WIDGET_ICONS.notes + '<span>Switch to Portrait</span></div>';
         } else if (wData.type === 'battery') {
-            slot.className += ' compact';
             slot.innerHTML = '<div class="battery-wrapper">' + WIDGET_ICONS.battery + '<div class="battery-pct">--%</div></div>';
         }
+
+        if (jiggleMode) {
+            var badge = document.createElement('div');
+            badge.className = 'widget-delete-badge';
+            badge.innerHTML = '&#10005;';
+            badge.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+                state.widgets = state.widgets.filter(function (w) { return w.id !== wData.id; });
+                saveState();
+                renderDashboardGrid();
+            });
+            slot.appendChild(badge);
+        }
+
         grid.appendChild(slot);
+        bindWidgetDrag(slot, wData);
     });
 
-    // Re-bind mechanical listeners
     initClockEngine();
     initRotaryTimerEngine();
     initBatteryEngine();
 }
 
-// 1. Apple Bold Clock (no border ring)
+function enterJiggleMode() {
+    if (jiggleMode) return;
+    jiggleMode = true;
+    renderDashboardGrid();
+}
+
+function exitJiggleMode() {
+    if (!jiggleMode) return;
+    jiggleMode = false;
+    renderDashboardGrid();
+}
+
+function bindWidgetDrag(el, wData) {
+    var holdTimer;
+
+    el.addEventListener('touchstart', function (e) {
+        if (e.target.closest('.widget-delete-badge') || e.target.closest('#rotary-ring') || e.target.tagName === 'BUTTON') return;
+        var touch = e.touches[0];
+
+        if (jiggleMode) {
+            dragCtx = {
+                id: wData.id,
+                startX: touch.clientX,
+                startY: touch.clientY,
+                origLeft: parseFloat(el.style.left),
+                origTop: parseFloat(el.style.top)
+            };
+        } else {
+            holdTimer = setTimeout(function () { enterJiggleMode(); }, 550);
+        }
+    });
+
+    el.addEventListener('touchmove', function (e) {
+        clearTimeout(holdTimer);
+        if (dragCtx && dragCtx.id === wData.id) {
+            e.preventDefault();
+            var touch = e.touches[0];
+            var dx = touch.clientX - dragCtx.startX;
+            var dy = touch.clientY - dragCtx.startY;
+            el.style.left = (dragCtx.origLeft + dx) + 'px';
+            el.style.top = (dragCtx.origTop + dy) + 'px';
+            el.style.zIndex = 50;
+        }
+    });
+
+    el.addEventListener('touchend', function () {
+        clearTimeout(holdTimer);
+        if (dragCtx && dragCtx.id === wData.id) {
+            finishWidgetDrag(el, wData);
+        }
+    });
+}
+
+function finishWidgetDrag(el, wData) {
+    var grid = document.getElementById('grid-surface');
+    var gridRect = grid.getBoundingClientRect();
+    var elRect = el.getBoundingClientRect();
+    var centerX = (elRect.left - gridRect.left) + elRect.width / 2;
+    var centerY = (elRect.top - gridRect.top) + elRect.height / 2;
+    var targetSlot = pointToSlot(centerX, centerY);
+
+    var occupant = null;
+    for (var i = 0; i < state.widgets.length; i++) {
+        var w = state.widgets[i];
+        if (w.id === wData.id) continue;
+        for (var k = 0; k < w.span; k++) {
+            if (w.slot + k === targetSlot) { occupant = w; break; }
+        }
+        if (occupant) break;
+    }
+
+    if (occupant) {
+        var tmp = occupant.slot;
+        occupant.slot = wData.slot;
+        wData.slot = tmp;
+    } else {
+        var col = targetSlot % GRID_COLS;
+        if (col + wData.span <= GRID_COLS) {
+            wData.slot = targetSlot;
+        }
+    }
+
+    dragCtx = null;
+    saveState();
+    renderDashboardGrid();
+}
+
 function initClockEngine() {
     function tick() {
         var now = new Date();
@@ -79,7 +243,6 @@ function initClockEngine() {
     tick();
 }
 
-// 2. Android Rotary Spin Dial Mechanics
 var pomoDuration = 1500;
 var pomoTimer = null;
 
@@ -116,7 +279,7 @@ function initRotaryTimerEngine() {
         if (Math.abs(delta) > 0.1) {
             pomoDuration += delta > 0 ? 60 : -60;
             if (pomoDuration < 60) pomoDuration = 60;
-            if (pomoDuration > 5400) pomoDuration = 5400; // max 90m
+            if (pomoDuration > 5400) pomoDuration = 5400;
 
             var m = Math.floor(pomoDuration / 60).toString();
             var s = (pomoDuration % 60).toString();
@@ -130,11 +293,14 @@ function initRotaryTimerEngine() {
     ring.addEventListener('touchend', function () { isSpinning = false; });
 
     if (playBtn) {
-        playBtn.addEventListener('click', function () {
+        playBtn.addEventListener('touchend', function (e) {
+            e.stopPropagation();
             if (pomoTimer) {
                 clearInterval(pomoTimer);
                 pomoTimer = null;
+                playBtn.innerHTML = ICON_PLAY;
             } else {
+                playBtn.innerHTML = ICON_PAUSE;
                 pomoTimer = setInterval(function () {
                     if (pomoDuration > 0) {
                         pomoDuration--;
@@ -146,6 +312,7 @@ function initRotaryTimerEngine() {
                     } else {
                         clearInterval(pomoTimer);
                         pomoTimer = null;
+                        playBtn.innerHTML = ICON_PLAY;
                     }
                 }, 1000);
             }
@@ -153,16 +320,17 @@ function initRotaryTimerEngine() {
     }
 
     if (resetBtn) {
-        resetBtn.addEventListener('click', function () {
+        resetBtn.addEventListener('touchend', function (e) {
+            e.stopPropagation();
             clearInterval(pomoTimer);
             pomoTimer = null;
             pomoDuration = 1500;
             display.textContent = '25:00';
+            if (playBtn) playBtn.innerHTML = ICON_PLAY;
         });
     }
 }
 
-// 3. Battery widget (uses navigator.getBattery where the browser supports it)
 function initBatteryEngine() {
     var pctEl = document.querySelector('.battery-pct');
     if (!pctEl) return;
@@ -178,7 +346,6 @@ function initBatteryEngine() {
     }
 }
 
-// 4. Apple Widget Gallery Sheet Gestures
 function initDrawerMechanics() {
     var surface = document.getElementById('landscape-view');
     var drawer = document.getElementById('widget-drawer');
@@ -187,27 +354,50 @@ function initDrawerMechanics() {
     if (!surface) return;
 
     surface.addEventListener('touchstart', function (e) {
-        if (e.target.tagName === 'BUTTON' || e.target.closest('#rotary-ring')) return;
+        if (jiggleMode) return;
+        if (e.target.closest('.widget-slot') || e.target.closest('#widget-drawer')) return;
         holdTimer = setTimeout(function () { drawer.className = 'drawer-panel open'; }, 700);
     });
+    surface.addEventListener('touchmove', function () { clearTimeout(holdTimer); });
     surface.addEventListener('touchend', function () { clearTimeout(holdTimer); });
 
-    // Close drawer if clicking outside
     surface.addEventListener('click', function (e) {
+        if (jiggleMode) {
+            if (!e.target.closest('.widget-slot')) { exitJiggleMode(); }
+            return;
+        }
         if (!e.target.closest('#widget-drawer')) { drawer.className = 'drawer-panel'; }
     });
 
+    var addLock = false;
+    function addWidgetFromCard(card) {
+        if (addLock) return;
+        addLock = true;
+        setTimeout(function () { addLock = false; }, 400);
+
+        var type = card.getAttribute('data-widget');
+        var span = (type === 'clock' || type === 'pomodoro') ? 2 : 1;
+        var freeSlot = findFreeSlot(span);
+        if (freeSlot !== -1) {
+            state.widgets.push({ id: 'w_' + Date.now(), type: type, span: span, slot: freeSlot });
+            saveState();
+            renderDashboardGrid();
+        }
+        drawer.className = 'drawer-panel';
+    }
+
     var cards = document.querySelectorAll('.drawer-item-card');
     for (var i = 0; i < cards.length; i++) {
-        cards[i].addEventListener('click', function () {
-            var type = this.getAttribute('data-widget');
-            if (state.widgets.length < 8) {
-                state.widgets.push({ id: 'w_' + Date.now(), type: type });
-                saveState();
-                renderDashboardGrid();
-            }
-            drawer.className = 'drawer-panel';
-        });
+        (function (card) {
+            card.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+                addWidgetFromCard(card);
+            });
+            card.addEventListener('click', function (e) {
+                e.stopPropagation();
+                addWidgetFromCard(card);
+            });
+        })(cards[i]);
     }
 }
 
@@ -229,23 +419,33 @@ function createBlockNode(data) {
     el.style.left = data.x + 'px';
     el.style.top = data.y + 'px';
 
+    var handle = document.createElement('div');
+    handle.className = 'card-handle';
+    el.appendChild(handle);
+
+    var body = document.createElement('div');
+    body.className = 'card-body';
+
     var textarea = document.createElement('textarea');
     textarea.value = data.text;
 
     if (data.type === 'note') {
-        el.appendChild(textarea);
+        body.appendChild(textarea);
     } else {
+        body.className += ' todo-body';
         var box = document.createElement('div');
         box.className = 'todo-card-checkbox';
-        box.addEventListener('click', function () {
+        box.addEventListener('touchend', function (e) {
+            e.stopPropagation();
             data.done = !data.done;
             el.className = 'draggable-card type-todo' + (data.done ? ' done' : '');
             saveState();
         });
         textarea.className = 'todo-card-textarea';
-        el.appendChild(box);
-        el.appendChild(textarea);
+        body.appendChild(box);
+        body.appendChild(textarea);
     }
+    el.appendChild(body);
     canvas.appendChild(el);
 
     textarea.addEventListener('change', function (e) {
@@ -253,22 +453,19 @@ function createBlockNode(data) {
         if (item) { item.text = e.target.value; saveState(); }
     });
 
-    // Drag tracking + trash overlap detection
     var active = false;
     var currentX = data.x, currentY = data.y, initialX, initialY;
     var xOffset = data.x, yOffset = data.y;
 
-    el.addEventListener('touchstart', function (e) {
-        if (document.activeElement === textarea) return;
+    handle.addEventListener('touchstart', function (e) {
         var touch = e.touches[0];
         initialX = touch.clientX - xOffset;
         initialY = touch.clientY - yOffset;
         active = true;
     }, false);
 
-    el.addEventListener('touchend', function () {
+    handle.addEventListener('touchend', function () {
         active = false;
-        // Check trash collision
         var tRect = trashBin.getBoundingClientRect();
         if (currentX + 85 > tRect.left && currentX < tRect.right && currentY + 85 > tRect.top) {
             state.blocks = state.blocks.filter(function (b) { return b.id !== data.id; });
@@ -281,7 +478,7 @@ function createBlockNode(data) {
         if (item) { item.x = currentX; item.y = currentY; saveState(); }
     }, false);
 
-    el.addEventListener('touchmove', function (e) {
+    handle.addEventListener('touchmove', function (e) {
         if (active) {
             e.preventDefault();
             var touch = e.touches[0];
@@ -292,7 +489,6 @@ function createBlockNode(data) {
             el.style.left = currentX + 'px';
             el.style.top = currentY + 'px';
 
-            // Trash proximity pulse
             var tRect = trashBin.getBoundingClientRect();
             if (currentX + 85 > tRect.left && currentY + 85 > tRect.top) {
                 trashBin.style.transform = 'scale(1.25)';
@@ -303,7 +499,6 @@ function createBlockNode(data) {
     }, false);
 }
 
-// Corner Action FAB: opens an anchored popup beside the button with a scale/fade transition
 function initFABController() {
     var trigger = document.getElementById('fab-trigger');
     var popup = document.getElementById('fab-popup');
@@ -351,9 +546,6 @@ function initFABController() {
     });
 }
 
-// ========================================================
-// INITIALIZATION BOOT MANAGER
-// ========================================================
 window.onload = function () {
     renderDashboardGrid();
     initDrawerMechanics();

@@ -9,6 +9,14 @@
     -webkit-user-select: none;
 }
 
+/* Text areas must stay editable/selectable — the global reset above
+   would otherwise block tap-to-focus and cursor placement on iOS. */
+textarea,
+input {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
 body,
 html {
     width: 100%;
@@ -16,7 +24,6 @@ html {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
     overflow: hidden;
     position: fixed;
-    /* Completely kills elastic window bouncing on old iOS 9 web engines */
     background-color: #000000;
     color: #ffffff;
 }
@@ -31,62 +38,81 @@ html {
 }
 
 /* ========================================================
-   LANDSCAPE: APPLE STANDBY 4x2 INTERACTIVE MATRIX
+   LANDSCAPE: APPLE STANDBY 4x2 SLOT GRID
    ======================================================== */
 @media (orientation: landscape) {
     #landscape-view {
-        display: flex;
-        justify-content: center;
-        align-items: center;
         background-color: #000000;
         width: 100%;
         height: 100%;
         position: relative;
-    }
-
-    /* Fixed to the iPad mini's actual 1024x768 non-Retina resolution.
-       This guarantees pixel-identical layout on the iPad and on a Mac
-       browser window, instead of scaling relative to whatever viewport
-       the page happens to be rendered in (vw/vh). */
-    #landscape-view {
         overflow: hidden;
     }
 
+    /* Fixed 1024x768 canvas, exact slot math (4 cols x 2 rows).
+       Centered with absolute positioning + negative margins instead of
+       flexbox — old iOS 9 WebKit reports viewport height inconsistently
+       for flex-centered fixed-position ancestors, which is what was
+       throwing individual widgets off-center. Absolute + margin math
+       is computed directly from the element's own fixed size, so it
+       can't drift regardless of how the browser reports the viewport. */
     .surface-matrix {
-        display: flex;
-        flex-wrap: wrap;
+        position: absolute;
+        top: 50%;
+        left: 50%;
         width: 1024px;
         height: 768px;
-        padding: 10px;
+        margin-top: -384px;
+        margin-left: -512px;
         background: #000000;
-        align-content: flex-start;
-        flex-shrink: 0;
     }
 
-    /* Core modular widget slot containers */
     .widget-slot {
+        position: absolute;
         background-color: #121214;
         border-radius: 28px;
-        margin: 10px;
-        position: relative;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        transition: left 0.18s ease, top 0.18s ease, width 0.18s ease;
     }
 
-    /* Grid sizes are fixed px fractions of the 1024x768 canvas, not
-       viewport-relative, so widget proportions never shift with screen size. */
-    .w-size-2x1 {
-        width: 492px;
-        height: 364px;
+    .widget-slot.jiggle {
+        animation: widgetWiggle 0.26s infinite;
     }
 
-    /* Smaller widgets get a quarter-height slot so more fit per screen */
-    .w-size-2x1.compact {
-        height: 172px;
+    @keyframes widgetWiggle {
+        0% {
+            transform: rotate(-1deg);
+        }
+
+        50% {
+            transform: rotate(1deg);
+        }
+
+        100% {
+            transform: rotate(-1deg);
+        }
+    }
+
+    .widget-delete-badge {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background-color: #ff453a;
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        z-index: 30;
     }
 
     /* MODULAR SUBCOMPONENTS 1: MODERN APPLE BOLD CLOCK (no border ring) */
@@ -100,7 +126,7 @@ html {
     }
 
     #apple-time {
-        font-size: 6.8rem;
+        font-size: 5.6rem;
         font-weight: 800;
         color: #ffffff;
         line-height: 1;
@@ -108,7 +134,7 @@ html {
     }
 
     #apple-date {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 700;
         color: #ff453a;
         margin-top: 6px;
@@ -127,8 +153,8 @@ html {
     }
 
     .dial-outer-ring {
-        width: 140px;
-        height: 140px;
+        width: 130px;
+        height: 130px;
         border-radius: 50%;
         border: 3px dashed rgba(10, 132, 255, 0.3);
         position: absolute;
@@ -139,7 +165,7 @@ html {
     }
 
     #pomo-time {
-        font-size: 2.8rem;
+        font-size: 2.4rem;
         font-weight: 300;
         color: #0a84ff;
         position: absolute;
@@ -149,7 +175,7 @@ html {
 
     .pomo-icon-controls {
         position: absolute;
-        bottom: 12px;
+        bottom: 10px;
         display: flex;
         justify-content: center;
         width: 100%;
@@ -159,10 +185,10 @@ html {
         background: rgba(255, 255, 255, 0.08);
         border: none;
         color: white;
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        margin: 0 10px;
+        margin: 0 8px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -184,16 +210,18 @@ html {
     }
 
     .weather-temp {
-        font-size: 2.4rem;
+        font-size: 2rem;
         font-weight: 700;
         color: #ffffff;
     }
 
     .weather-label {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #8e8e93;
         letter-spacing: 0.5px;
         text-transform: uppercase;
+        text-align: center;
+        padding: 0 8px;
     }
 
     /* MODULAR SUBCOMPONENTS 4: NOTES SHORTCUT */
@@ -209,10 +237,12 @@ html {
 
     .notes-wrapper span {
         margin-top: 6px;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #aeaeb2;
         letter-spacing: 0.5px;
         text-transform: uppercase;
+        text-align: center;
+        padding: 0 8px;
     }
 
     /* MODULAR SUBCOMPONENTS 5: BATTERY INDICATOR */
@@ -227,15 +257,13 @@ html {
     }
 
     .battery-pct {
-        font-size: 2.2rem;
+        font-size: 1.9rem;
         font-weight: 700;
         color: #ffffff;
         margin-top: 6px;
     }
 
-    /* IOS SHEET STYLE DRAWER COMPONENT
-       Fixed to the 1024px frame width and centered, rather than spanning
-       the full browser window, so it lines up with the widget grid above it. */
+    /* IOS SHEET STYLE DRAWER COMPONENT */
     .drawer-panel {
         position: fixed;
         bottom: -320px;
@@ -309,23 +337,24 @@ html {
    ======================================================== */
 @media (orientation: portrait) {
     #portrait-view {
-        display: flex;
-        justify-content: center;
-        align-items: center;
         width: 100%;
         height: 100%;
         background-color: #000000;
+        position: relative;
         overflow: hidden;
     }
 
-    /* Fixed to the iPad mini's rotated 768x1024 resolution, centered within
-       whatever window it's actually viewed in (Mac or iPad), so the canvas,
-       trash zone, and add button always sit in exactly the same place. */
+    /* Same fix as landscape: absolute + margin centering instead of flex,
+       so the stage frame (and everything anchored inside it) sits dead
+       center regardless of how iOS 9 reports the viewport height. */
     .stage-portrait {
+        position: absolute;
+        top: 50%;
+        left: 50%;
         width: 768px;
         height: 1024px;
-        position: relative;
-        flex-shrink: 0;
+        margin-top: -512px;
+        margin-left: -384px;
         background-color: #000000;
     }
 
@@ -333,7 +362,6 @@ html {
         width: 100%;
         height: 100%;
         position: relative;
-        /* White dot grid */
         background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1.5px, transparent 1.5px);
         background-size: 28px 28px;
     }
@@ -343,11 +371,43 @@ html {
         position: absolute;
         width: 170px;
         height: 170px;
-        padding: 14px;
         border-radius: 18px;
         box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
         touch-action: none;
         z-index: 10;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Drag handle strip — the only part of the card that starts a drag.
+       Tapping the rest of the card (the textarea) always focuses it for typing. */
+    .card-handle {
+        width: 100%;
+        height: 18px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: grab;
+    }
+
+    .card-handle::before {
+        content: '';
+        width: 30px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(0, 0, 0, 0.22);
+    }
+
+    .draggable-card.type-todo .card-handle::before {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .card-body {
+        flex: 1;
+        padding: 0 14px 14px 14px;
+        min-height: 0;
     }
 
     /* Variant A: Sticky Note UI rules */
@@ -372,6 +432,9 @@ html {
     .draggable-card.type-todo {
         background-color: #1c1c1e;
         border: 1px solid #2c2c2e;
+    }
+
+    .card-body.todo-body {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
@@ -408,9 +471,7 @@ html {
         color: #8e8e93;
     }
 
-    /* FLOATING FIXED UI CONTEXT SHAPE LAYERS
-       Positioned relative to .stage-portrait (not the viewport) so they
-       stay pinned to the same spot on the canvas on any screen size. */
+    /* FLOATING FIXED UI CONTEXT SHAPE LAYERS — anchored to the stage frame */
     .action-fab {
         position: absolute;
         bottom: 25px;
@@ -433,7 +494,6 @@ html {
         transform: rotate(45deg);
     }
 
-    /* Popup anchored beside the FAB, not a full-screen modal */
     .fab-popup {
         position: absolute;
         bottom: 30px;
@@ -479,7 +539,6 @@ html {
         color: #0a84ff;
     }
 
-    /* Interactive Drop Trash Container block */
     .floating-trash {
         position: absolute;
         bottom: 25px;
