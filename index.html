@@ -6,55 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Gridfinity Deskboard Pro</title>
+    <title>StandBy Workspace</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- LANDSCAPE MODE: GRIDFINITY WIDGET COMPARTMENT BASE -->
+    <!-- LANDSCAPE MODE: APPLE STANDBY METRIC WIDGET DISPLAY -->
     <div id="landscape-view" class="view">
-        <div class="gridfinity-container">
+        <div class="standby-container">
 
-            <!-- BIN 1x1: APPLE METRIC TIME PIECE -->
-            <div class="gridfinity-bin" id="bin-clock">
-                <div class="bin-lip"></div>
-                <div class="bin-content clock-display">
-                    <div id="apple-time">00:00</div>
-                    <div id="apple-date">LOADING...</div>
-                </div>
+            <!-- STANDBY SIDE 1: GIANT CLOCK TYPOGRAPHY -->
+            <div class="standby-widget" id="standby-clock">
+                <div id="apple-time">00:00</div>
+                <div id="apple-date">LOADING...</div>
             </div>
 
-            <!-- BIN 1x1: SAFE CUSTOM SPOTIFY EMBED BLOCK -->
-            <div class="gridfinity-bin" id="bin-spotify">
-                <div class="bin-lip"></div>
-                <div class="bin-content spotify-card">
-                    <div class="spotify-header">
-                        <div class="spot-icon"></div>
-                        <span>Spotify</span>
-                    </div>
-                    <div class="album-art-wrapper">
-                        <img id="playlist-art" src="https://unsplash.com" alt="Lofi Art">
-                    </div>
-                    <div class="track-info">
-                        <h4 id="playlist-title">lofi chill</h4>
-                        <p id="track-status">Now Playing</p>
-                    </div>
-                    <div class="player-controls">
-                        <button class="ctrl-btn">⏮</button>
-                        <button class="ctrl-btn play-btn">▶</button>
-                        <button class="ctrl-btn">⏭</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BIN 1x1: POMODORO TIMER COMPARTMENT -->
-            <div class="gridfinity-bin" id="bin-pomodoro">
-                <div class="bin-lip"></div>
-                <div class="bin-content pomo-container">
-                    <h3>Focus Session</h3>
+            <!-- STANDBY SIDE 2: MINIMALIST POMODORO CONTROLLER -->
+            <div class="standby-widget" id="standby-pomodoro">
+                <div class="pomo-wrapper">
                     <div id="pomo-time">25:00</div>
-                    <div class="pomo-controls">
+                    <div class="pomo-actions">
                         <button id="pomo-start-btn">Start</button>
                         <button id="pomo-reset-btn">Reset</button>
                     </div>
@@ -63,38 +35,38 @@
 
         </div>
 
-        <!-- CONFIGURATOR HOLD SHEET -->
+        <!-- BACKGROUND CUSTOMIZER PANEL (Triggered via Long Press) -->
         <div id="edit-modal" class="modal">
             <div class="modal-content">
-                <h3>Gridfinity Bin Manager</h3>
-                <label>Playlist Artwork Image URL:</label>
-                <input type="text" id="artwork-url-input" placeholder="Paste image address...">
-                <label>Playlist Name:</label>
-                <input type="text" id="playlist-name-input" placeholder="e.g., lofi chill">
+                <h3>Theme Customizer</h3>
+                <label>Select Background Theme:</label>
+                <select id="theme-selector">
+                    <option value="pitch-black">Pure Pitch Black</option>
+                    <option value="midnight-blue">Midnight Velvet Blue</option>
+                    <option value="aurora-purple">Deep Cosmic Purple</option>
+                    <option value="charcoal-fade">Gentle Charcoal Gradient</option>
+                </select>
                 <div class="modal-actions">
-                    <button id="save-settings-btn">Save Layout</button>
+                    <button id="save-settings-btn">Apply Theme</button>
                     <button id="close-modal-btn">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PORTRAIT MODE: INTERACTIVE WHITEBOARD PLANNER -->
+    <!-- PORTRAIT MODE: MIRO-STYLE FREEFORM PLANNING CANVAS -->
     <div id="portrait-view" class="view">
         <div class="board-header">
-            <h2>Workspace Planner</h2>
+            <h2>Freeform Board</h2>
             <div class="header-actions">
-                <button id="add-todo-btn">+ Add Task</button>
-                <button id="add-note-btn">+ Add Note</button>
+                <button id="add-todo-btn">+ Add To-Do Item</button>
+                <button id="add-note-btn">+ Add Sticky Note</button>
             </div>
         </div>
 
-        <div class="workspace-split">
-            <div class="todo-panel">
-                <h3>Tasks</h3>
-                <ul id="todo-list"></ul>
-            </div>
-            <div id="canvas"></div>
+        <!-- UNIFIED INFINITE DRAGGABLE CANVAS FOR BOTH NOTES & TASKS -->
+        <div id="canvas">
+            <!-- Generated blocks go here -->
         </div>
     </div>
 

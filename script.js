@@ -1,27 +1,38 @@
 // ========================================================
-// CORE SAVED APPLICATION STATE DOCK
+// RESTRUCTURED SEAMLESS APPLICATION MEMORY STORE
 // ========================================================
 var state = {
-    playlistName: localStorage.getItem('g_playlistName') || 'lofi chill',
-    artworkUrl: localStorage.getItem('g_artworkUrl') || 'https://unsplash.com',
-    todos: JSON.parse(localStorage.getItem('g_todos')) || [
-        { id: 't1', text: 'Plan morning layout routines', done: false },
-        { id: 't2', text: 'Clean coffee equipment', done: true }
-    ],
-    notes: JSON.parse(localStorage.getItem('g_notes')) || [
-        { id: 'n1', x: 30, y: 50, text: 'Brainstorm workspace adjustments' }
+    theme: localStorage.getItem('s_theme') || 'pitch-black',
+    blocks: JSON.parse(localStorage.getItem('s_blocks')) || [
+        { id: 'b1', type: 'note', x: 40, y: 60, text: 'Brainstorm layout routines' },
+        { id: 'b2', type: 'todo', x: 240, y: 140, text: 'Clean studio desk setup', done: false }
     ]
 };
 
 function saveState() {
-    localStorage.setItem('g_playlistName', state.playlistName);
-    localStorage.setItem('g_artworkUrl', state.artworkUrl);
-    localStorage.setItem('g_todos', JSON.stringify(state.todos));
-    localStorage.setItem('g_notes', JSON.stringify(state.notes));
+    localStorage.setItem('s_theme', state.theme);
+    localStorage.setItem('s_blocks', JSON.stringify(state.blocks));
 }
 
 // ========================================================
-// SINGAPORE ORIENTED PRECISION CLOCK LOGIC
+// BACKGROUND GRADIENT CONFIGURATOR DIALER ENGINE
+// ========================================================
+var gradientThemes = {
+    'pitch-black': '#000000',
+    'midnight-blue': 'radial-gradient(circle, #0a1128 0%, #02040a 100%)',
+    'aurora-purple': 'radial-gradient(circle, #1a0b2e 0%, #05020c 100%)',
+    'charcoal-fade': 'linear-gradient(180deg, #141416 0%, #08080a 100%)'
+};
+
+function applyBackgroundTheme() {
+    var bgLayer = document.getElementById('landscape-view');
+    if (bgLayer) {
+        bgLayer.style.background = gradientThemes[state.theme] || '#000000';
+    }
+}
+
+// ========================================================
+// TRUE LOCAL TIME SYSTEM FOR ASIA / SINGAPORE DOCK
 // ========================================================
 function updateClock() {
     var now = new Date();
@@ -48,17 +59,7 @@ function updateClock() {
 }
 
 // ========================================================
-// SAFE DYNAMIC MOCK PLAYER CONTROLLER (Bypasses iPad Popups)
-// ========================================================
-function loadMockPlayer() {
-    var titleEl = document.getElementById('playlist-title');
-    var artEl = document.getElementById('playlist-art');
-    if (titleEl) titleEl.textContent = state.playlistName;
-    if (artEl) artEl.src = state.artworkUrl;
-}
-
-// ========================================================
-// POMODORO MECHANICAL COUNTDOWN CORE
+// POMODORO TIMER SYSTEM
 // ========================================================
 var pomoDuration = 1500;
 var pomoTimer = null;
@@ -74,7 +75,7 @@ function initPomodoro() {
             clearInterval(pomoTimer);
             pomoTimer = null;
             startBtn.textContent = 'Start';
-            startBtn.style.backgroundColor = '#34c759';
+            startBtn.style.backgroundColor = '#30d158';
         } else {
             startBtn.textContent = 'Pause';
             startBtn.style.backgroundColor = '#ffcc00';
@@ -100,35 +101,34 @@ function initPomodoro() {
         pomoDuration = 1500;
         display.textContent = '25:00';
         startBtn.textContent = 'Start';
-        startBtn.style.backgroundColor = '#34c759';
+        startBtn.style.backgroundColor = '#30d158';
     });
 }
 
 // ========================================================
-// GRIDFINITY PRESS-AND-HOLD MANAGER SHEET GESTURE
+// LONG PRESS DETECTOR GESTURE
 // ========================================================
-function initEditGestures() {
-    var grid = document.querySelector('.gridfinity-container');
+function initLongPressGesture() {
+    var view = document.getElementById('landscape-view');
     var modal = document.getElementById('edit-modal');
     var longPressTimer;
 
-    if (!grid) return;
+    if (!view) return;
 
-    grid.addEventListener('touchstart', function () {
+    view.addEventListener('touchstart', function (e) {
+        if (e.target.tagName === 'BUTTON') return; // Skip button clocks
         longPressTimer = setTimeout(function () {
             modal.style.display = 'flex';
-            document.getElementById('playlist-name-input').value = state.playlistName;
-            document.getElementById('artwork-url-input').value = state.artworkUrl;
+            document.getElementById('theme-selector').value = state.theme;
         }, 800);
     });
 
-    grid.addEventListener('touchend', function () { clearTimeout(longPressTimer); });
+    view.addEventListener('touchend', function () { clearTimeout(longPressTimer); });
 
     document.getElementById('save-settings-btn').addEventListener('click', function () {
-        state.playlistName = document.getElementById('playlist-name-input').value;
-        state.artworkUrl = document.getElementById('artwork-url-input').value;
+        state.theme = document.getElementById('theme-selector').value;
         saveState();
-        loadMockPlayer();
+        applyBackgroundTheme();
         modal.style.display = 'none';
     });
 
@@ -138,120 +138,129 @@ function initEditGestures() {
 }
 
 // ========================================================
-// FIXED PLANNER LIST IMPLEMENTATIONS
+// UNIFIED MIRO-STYLE FREEFORM INTERACTIVE DRAG ENGAGEMENT 
 // ========================================================
-function renderTodos() {
-    var list = document.getElementById('todo-list');
-    if (!list) return;
-    list.innerHTML = '';
+var canvas = document.getElementById('canvas');
 
-    state.todos.forEach(function (todo, idx) {
-        var li = document.createElement('li');
-        li.className = 'todo-item' + (todo.done ? ' done' : '');
+function renderFreeformCanvas() {
+    if (!canvas) return;
+    canvas.innerHTML = '';
+    state.blocks.forEach(function (blockData) {
+        createBlockElement(blockData);
+    });
+}
 
-        var box = document.createElement('div');
-        box.className = 'todo-checkbox';
-        box.addEventListener('click', function () {
-            state.todos[idx].done = !state.todos[idx].done;
+function createBlockElement(data) {
+    var el = document.createElement('div');
+    el.className = 'draggable-card type-' + data.type + (data.done ? ' done' : '');
+    el.style.left = data.x + 'px';
+    el.style.top = data.y + 'px';
+
+    var textarea = document.createElement('textarea');
+    textarea.value = data.text;
+
+    // Build structure depending on card context types
+    if (data.type === 'note') {
+        el.appendChild(textarea);
+    } else {
+        // Structural wrapper block definitions for Task items
+        var mainContainer = document.createElement('div');
+        mainContainer.className = 'todo-card-main';
+
+        var checkbox = document.createElement('div');
+        checkbox.className = 'todo-card-checkbox';
+
+        checkbox.addEventListener('click', function () {
+            data.done = !data.done;
+            el.className = 'draggable-card type-todo' + (data.done ? ' done' : '');
             saveState();
-            renderTodos();
         });
 
-        var input = document.createElement('input');
-        input.value = todo.text;
-        input.addEventListener('change', function (e) {
-            state.todos[idx].text = e.target.value;
-            saveState();
-        });
+        textarea.className = 'todo-card-textarea';
 
-        li.appendChild(box);
-        li.appendChild(input);
-        list.appendChild(li);
+        mainContainer.appendChild(checkbox);
+        mainContainer.appendChild(textarea);
+        el.appendChild(mainContainer);
+
+        var footer = document.createElement('div');
+        footer.className = 'todo-card-footer';
+        footer.textContent = 'Action Item';
+        el.appendChild(footer);
+    }
+
+    canvas.appendChild(el);
+
+    // Sync content modifications directly into tracking arrays
+    textarea.addEventListener('change', function (e) {
+        var item = state.blocks.find(function (b) { return b.id === data.id; });
+        if (item) {
+            item.text = e.target.value;
+            saveState();
+        }
+    });
+
+    // Pure mathematical touch translation bypasses iOS scroll engine freezes
+    var active = false;
+    var currentX = data.x, currentY = data.y, initialX, initialY;
+    var xOffset = data.x, yOffset = data.y;
+
+    el.addEventListener('touchstart', function (e) {
+        if (document.activeElement === textarea) return;
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+        active = true;
+    }, false);
+
+    el.addEventListener('touchend', function () {
+        active = false;
+        var item = state.blocks.find(function (b) { return b.id === data.id; });
+        if (item) {
+            item.x = currentX;
+            item.y = currentY;
+            saveState();
+        }
+    }, false);
+
+    el.addEventListener('touchmove', function (e) {
+        if (active) {
+            e.preventDefault(); // Stop window bouncing
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            el.style.left = currentX + 'px';
+            el.style.top = currentY + 'px';
+        }
+    }, false);
+}
+
+// Button Bindings for Workspace Elements
+var addNoteBtn = document.getElementById('add-note-btn');
+if (addNoteBtn) {
+    addNoteBtn.addEventListener('click', function () {
+        var block = { id: 'b_' + Date.now(), type: 'note', x: 60, y: 80, text: 'Sticky note text...' };
+        state.blocks.push(block);
+        saveState();
+        createBlockElement(block);
     });
 }
 
 var addTodoBtn = document.getElementById('add-todo-btn');
 if (addTodoBtn) {
     addTodoBtn.addEventListener('click', function () {
-        state.todos.push({ id: 't_' + Date.now(), text: 'New Task...', done: false });
+        var block = { id: 'b_' + Date.now(), type: 'todo', x: 100, y: 120, text: 'Task description...', done: false };
+        state.blocks.push(block);
         saveState();
-        renderTodos();
+        createBlockElement(block);
     });
 }
 
-// ========================================================
-// RE-BOUND INTERACTIVE DRAG STICKY NOTES LOGIC
-// ========================================================
-var canvas = document.getElementById('canvas');
-
-function renderNotes() {
-    if (!canvas) return;
-    canvas.innerHTML = '';
-    state.notes.forEach(function (noteData) { createNoteElement(noteData); });
-}
-
-function createNoteElement(data) {
-    var note = document.createElement('div');
-    note.className = 'sticky-note';
-    note.style.left = data.x + 'px';
-    note.style.top = data.y + 'px';
-
-    var textarea = document.createElement('textarea');
-    textarea.value = data.text;
-    note.appendChild(textarea);
-    canvas.appendChild(note);
-
-    textarea.addEventListener('change', function (e) {
-        var target = state.notes.find(function (n) { return n.id === data.id; });
-        if (target) { target.text = e.target.value; saveState(); }
-    });
-
-    var active = false;
-    var currentX = data.x, currentY = data.y, initialX, initialY;
-    var xOffset = data.x, yOffset = data.y;
-
-    note.addEventListener('touchstart', function (e) {
-        if (document.activeElement === textarea) return;
-        initialX = e.touches.clientX - xOffset;
-        initialY = e.touches.clientY - yOffset;
-        active = true;
-    }, false);
-
-    note.addEventListener('touchend', function () {
-        active = false;
-        var target = state.notes.find(function (n) { return n.id === data.id; });
-        if (target) { target.x = currentX; target.y = currentY; saveState(); }
-    }, false);
-
-    note.addEventListener('touchmove', function (e) {
-        if (active) {
-            e.preventDefault();
-            currentX = e.touches.clientX - initialX;
-            currentY = e.touches.clientY - initialY;
-            xOffset = currentX; yOffset = currentY;
-            note.style.left = currentX + 'px';
-            note.style.top = currentY + 'px';
-        }
-    }, false);
-}
-
-var addNoteBtn = document.getElementById('add-note-btn');
-if (addNoteBtn) {
-    addNoteBtn.addEventListener('click', function () {
-        var newNote = { id: 'n_' + Date.now(), x: 60, y: 80, text: 'Write notes here...' };
-        state.notes.push(newNote);
-        saveState();
-        createNoteElement(newNote);
-    });
-}
-
-// INITIALIZATION DRIVER
+// INITIALIZATION INTEGRATION ROUTER
 window.onload = function () {
     setInterval(updateClock, 1000);
     updateClock();
-    loadMockPlayer();
+    applyBackgroundTheme();
     initPomodoro();
-    initEditGestures();
-    renderTodos();
-    renderNotes();
+    initLongPressGesture();
+    renderFreeformCanvas();
 };
