@@ -1,13 +1,4 @@
 {
-    "outputDirectory": "src/app",
-    "installCommand": "npm install",
-    "devCommand": "npx expo",
     "cleanUrls": true,
-    "framework": null,
-    "rewrites": [
-        {
-            "source": "/:path*",
-            "destination": "/"
-        }
-    ]
+    "outputDirectory": "web-build"
 }
