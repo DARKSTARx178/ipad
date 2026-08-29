@@ -231,7 +231,7 @@ function finishWidgetDrag(el, wData) {
 function initClockEngine() {
     function tick() {
         var now = new Date();
-        var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', hour12: false });
+        var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit', hour12: true });
         var dateStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Singapore', weekday: 'long', month: 'short', day: 'numeric' });
 
         var timeEl = document.getElementById('apple-time');
