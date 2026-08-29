@@ -44,15 +44,23 @@ html {
         position: relative;
     }
 
-    /* 4 Columns x 2 Rows Layout Grid Engine fallback for older browser blocks */
+    /* Fixed to the iPad mini's actual 1024x768 non-Retina resolution.
+       This guarantees pixel-identical layout on the iPad and on a Mac
+       browser window, instead of scaling relative to whatever viewport
+       the page happens to be rendered in (vw/vh). */
+    #landscape-view {
+        overflow: hidden;
+    }
+
     .surface-matrix {
         display: flex;
         flex-wrap: wrap;
-        width: 100vw;
-        height: 100vh;
+        width: 1024px;
+        height: 768px;
         padding: 10px;
         background: #000000;
         align-content: flex-start;
+        flex-shrink: 0;
     }
 
     /* Core modular widget slot containers */
@@ -69,15 +77,16 @@ html {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
-    /* Grid sizes managed via explicit dynamic sizing maps */
+    /* Grid sizes are fixed px fractions of the 1024x768 canvas, not
+       viewport-relative, so widget proportions never shift with screen size. */
     .w-size-2x1 {
-        width: calc(50vw - 20px);
-        height: calc(50vh - 20px);
+        width: 492px;
+        height: 364px;
     }
 
     /* Smaller widgets get a quarter-height slot so more fit per screen */
     .w-size-2x1.compact {
-        height: calc(25vh - 20px);
+        height: 172px;
     }
 
     /* MODULAR SUBCOMPONENTS 1: MODERN APPLE BOLD CLOCK (no border ring) */
@@ -224,12 +233,15 @@ html {
         margin-top: 6px;
     }
 
-    /* IOS SHEET STYLE DRAWER COMPONENT */
+    /* IOS SHEET STYLE DRAWER COMPONENT
+       Fixed to the 1024px frame width and centered, rather than spanning
+       the full browser window, so it lines up with the widget grid above it. */
     .drawer-panel {
         position: fixed;
         bottom: -320px;
-        left: 0;
-        width: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1024px;
         height: 300px;
         background-color: #1c1c1e;
         border-top-left-radius: 24px;
@@ -298,10 +310,23 @@ html {
 @media (orientation: portrait) {
     #portrait-view {
         display: flex;
+        justify-content: center;
+        align-items: center;
         width: 100%;
         height: 100%;
         background-color: #000000;
+        overflow: hidden;
+    }
+
+    /* Fixed to the iPad mini's rotated 768x1024 resolution, centered within
+       whatever window it's actually viewed in (Mac or iPad), so the canvas,
+       trash zone, and add button always sit in exactly the same place. */
+    .stage-portrait {
+        width: 768px;
+        height: 1024px;
         position: relative;
+        flex-shrink: 0;
+        background-color: #000000;
     }
 
     #canvas {
@@ -383,9 +408,11 @@ html {
         color: #8e8e93;
     }
 
-    /* FLOATING FIXED UI CONTEXT SHAPE LAYERS */
+    /* FLOATING FIXED UI CONTEXT SHAPE LAYERS
+       Positioned relative to .stage-portrait (not the viewport) so they
+       stay pinned to the same spot on the canvas on any screen size. */
     .action-fab {
-        position: fixed;
+        position: absolute;
         bottom: 25px;
         right: 25px;
         width: 60px;
@@ -408,7 +435,7 @@ html {
 
     /* Popup anchored beside the FAB, not a full-screen modal */
     .fab-popup {
-        position: fixed;
+        position: absolute;
         bottom: 30px;
         right: 95px;
         z-index: 500;
@@ -454,7 +481,7 @@ html {
 
     /* Interactive Drop Trash Container block */
     .floating-trash {
-        position: fixed;
+        position: absolute;
         bottom: 25px;
         left: 25px;
         width: 60px;
