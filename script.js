@@ -288,7 +288,7 @@ function initClockEngine() {
     function tick() {
         safeRun(function () {
             var now = new Date();
-            var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', hour12: false });
+            var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', hour12: false }).replace(/[^0-9:]/g, '');
             var dateStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Singapore', weekday: 'long', month: 'short', day: 'numeric' });
             var t = document.getElementById('apple-time');
             var d = document.getElementById('apple-date');
