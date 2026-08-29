@@ -125,12 +125,13 @@ html {
         letter-spacing: -2px;
     }
 
-    #apple-ampm {
-        font-size: 1.1rem;
+    #apple-date {
+        font-size: 1rem;
         font-weight: 700;
         color: #ff453a;
         margin-top: 6px;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
     }
 
     /* MODULAR SUBCOMPONENTS 2: SIMPLE COUNTDOWN TIMER (plain digits, no drag) */
@@ -199,7 +200,7 @@ html {
         padding: 0 8px;
     }
 
-    /* MODULAR SUBCOMPONENTS 4: VIRTUAL PET (VS Code Pets style companion) */
+    /* MODULAR SUBCOMPONENTS 4: TAMAGOTCHI-STYLE PIXEL PET */
     .pet-wrapper {
         display: flex;
         flex-direction: column;
@@ -209,31 +210,85 @@ html {
         height: 100%;
     }
 
+    .tama-shell {
+        width: 108px;
+        height: 88px;
+        background-color: #2c3a2c;
+        border: 3px solid #1a231a;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset 0 0 0 2px #3d4e3d;
+    }
+
     .pet-scene {
-        width: 100%;
-        height: 70%;
+        width: 64px;
+        height: 48px;
         position: relative;
-        overflow: hidden;
     }
 
     .pet-sprite {
-        position: absolute;
-        bottom: 10px;
-        left: 20px;
-        color: #ffd60a;
+        width: 64px;
+        height: 48px;
         transition: transform 0.9s ease-in-out;
     }
 
-    .pet-sprite.mood-napping {
-        opacity: 0.55;
+    .pet-sprite.held {
+        animation: petVibrate 0.09s infinite;
+        transition: none;
     }
 
-    .pet-sprite.mood-happy {
-        color: #30d158;
+    @keyframes petVibrate {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        25% {
+            transform: translate(-1.5px, 1px) rotate(-2deg);
+        }
+
+        50% {
+            transform: translate(1.5px, -1px) rotate(2deg);
+        }
+
+        75% {
+            transform: translate(-1px, -1px) rotate(-1deg);
+        }
+
+        100% {
+            transform: translate(1px, 1px) rotate(1deg);
+        }
+    }
+
+    /* Simple 8x6 pixel-grid sprite — blocky, low-res, deliberately Tamagotchi-ish */
+    .tama-pixel-body {
+        width: 64px;
+        height: 48px;
+    }
+
+    .tama-row {
+        display: flex;
+        height: 8px;
+    }
+
+    .tama-row i {
+        display: block;
+        width: 8px;
+        height: 8px;
+        background: transparent;
+    }
+
+    .tama-row i.on {
+        background-color: #9be564;
+    }
+
+    .tama-row i.eye {
+        background-color: #16321a;
     }
 
     .pet-label {
-        margin-top: 4px;
+        margin-top: 8px;
         font-size: 0.75rem;
         color: #8e8e93;
         letter-spacing: 0.5px;

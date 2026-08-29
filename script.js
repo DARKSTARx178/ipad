@@ -117,7 +117,7 @@ function saveState() {
 
 var WIDGET_ICONS = {
     weather: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
-    pet: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="7"/><path d="M9 11h.01M15 11h.01" stroke-linecap="round" stroke-width="2.4"/><path d="M9.5 15.5c1 1 4 1 5 0" stroke-linecap="round"/><path d="M8 6.5C7 5 5 5 4.5 6.5M16 6.5C17 5 19 5 19.5 6.5" stroke-linecap="round"/></svg>',
+    pet: '<div class="tama-pixel-body"><div class="tama-row"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><div class="tama-row"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="tama-row"><i class="on"></i><i class="on"></i><i class="eye"></i><i class="on"></i><i class="on"></i><i class="eye"></i><i class="on"></i><i class="on"></i></div><div class="tama-row"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><div class="tama-row"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="tama-row"><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i></div></div>',
     timer: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2h6" stroke-linecap="round"/></svg>'
 };
 
@@ -160,11 +160,11 @@ function renderDashboardGrid() {
             slot.style.height = rect.height + 'px';
 
             if (wData.type === 'clock') {
-                slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">--:--</div><div id="apple-ampm">--</div></div>';
+                slot.innerHTML = '<div class="clock-wrapper"><div id="apple-time">--:--</div><div id="apple-date">LOADING...</div></div>';
             } else if (wData.type === 'weather') {
                 slot.innerHTML = '<div class="weather-wrapper" id="weather-box">' + WIDGET_ICONS.weather + '<div class="weather-temp" id="weather-temp">--°</div><div class="weather-label" id="weather-label">Loading...</div></div>';
             } else if (wData.type === 'pet') {
-                slot.innerHTML = '<div class="pet-wrapper"><div class="pet-scene"><div class="pet-sprite" id="pet-sprite-' + wData.id + '">' + WIDGET_ICONS.pet + '</div></div><div class="pet-label" id="pet-label-' + wData.id + '">idle</div></div>';
+                slot.innerHTML = '<div class="pet-wrapper"><div class="tama-shell"><div class="pet-scene"><div class="pet-sprite" id="pet-sprite-' + wData.id + '">' + WIDGET_ICONS.pet + '</div></div></div><div class="pet-label" id="pet-label-' + wData.id + '">idle</div></div>';
             } else if (wData.type === 'timer') {
                 slot.innerHTML = '<div class="simple-timer-wrapper"><div id="timer-display-' + wData.id + '">05:00</div><div class="timer-controls"><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="start">' + ICON_PLAY + '</button><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="reset">' + ICON_RESET + '</button></div></div>';
             }
@@ -288,12 +288,12 @@ function initClockEngine() {
     function tick() {
         safeRun(function () {
             var now = new Date();
-            var hourMin = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit', hour12: true });
-            var parts = hourMin.split(' ');
+            var timeStr = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: '2-digit', minute: '2-digit', hour12: false });
+            var dateStr = now.toLocaleDateString('en-US', { timeZone: 'Asia/Singapore', weekday: 'long', month: 'short', day: 'numeric' });
             var t = document.getElementById('apple-time');
-            var ap = document.getElementById('apple-ampm');
-            if (t) t.textContent = parts[0];
-            if (ap) ap.textContent = parts[1] || '';
+            var d = document.getElementById('apple-date');
+            if (t) t.textContent = timeStr;
+            if (d) d.textContent = dateStr;
         });
     }
     if (window.__clockInterval) clearInterval(window.__clockInterval);
@@ -376,7 +376,7 @@ function initPetEngines() {
 
         if (petIntervals[wData.id]) clearInterval(petIntervals[wData.id]);
 
-        var localState = { x: 30, dir: 1 };
+        var localState = { x: 0, dir: 1 };
         var moods = ['idle', 'walking', 'stretching', 'napping'];
 
         petIntervals[wData.id] = setInterval(function () {
@@ -384,14 +384,15 @@ function initPetEngines() {
                 var s = document.getElementById('pet-sprite-' + wData.id);
                 var l = document.getElementById('pet-label-' + wData.id);
                 if (!s) { clearInterval(petIntervals[wData.id]); return; }
+                if (s.classList.contains('held')) return;
 
                 var mood;
                 var roll = Math.random();
                 if (roll < 0.55) {
                     mood = 'walking';
-                    localState.x += localState.dir * 6;
-                    if (localState.x > 150) { localState.dir = -1; }
-                    if (localState.x < 0) { localState.dir = 1; }
+                    localState.x += localState.dir * 3;
+                    if (localState.x > 12) { localState.dir = -1; }
+                    if (localState.x < -12) { localState.dir = 1; }
                 } else {
                     mood = moods[Math.floor(Math.random() * moods.length)];
                 }
@@ -401,10 +402,15 @@ function initPetEngines() {
             });
         }, 1400);
 
+        sprite.addEventListener('touchstart', function (e) {
+            e.stopPropagation();
+            sprite.classList.add('held');
+            var l = document.getElementById('pet-label-' + wData.id);
+            if (l) l.textContent = 'held!';
+        });
         sprite.addEventListener('touchend', function (e) {
             e.stopPropagation();
-            sprite.className = 'pet-sprite mood-happy';
-            if (label) label.textContent = 'happy!';
+            sprite.classList.remove('held');
         });
     });
 }
