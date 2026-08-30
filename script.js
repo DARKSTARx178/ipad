@@ -11,7 +11,7 @@ var OWM_UNITS = 'metric';
 // List every track dropped into assets/audio/ here, in play order.
 // File name only needed here since they all live in the same folder.
 var MUSIC_TRACKS = [
-    // { title: 'Song Name', file: 'assets/audio/song1.mp3' },
+    { title: 'Ordinary', file: 'assets/audio/Ordinary.mp3' },
 ];
 
 // ========================================================
