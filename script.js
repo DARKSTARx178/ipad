@@ -8,6 +8,12 @@ var OWM_API_KEY = 'ed8e61af30682533f8846012e1ec66ee';
 var OWM_CITY = 'Singapore,SG';
 var OWM_UNITS = 'metric';
 
+// List every track dropped into assets/audio/ here, in play order.
+// File name only needed here since they all live in the same folder.
+var MUSIC_TRACKS = [
+    // { title: 'Song Name', file: 'assets/audio/song1.mp3' },
+];
+
 // ========================================================
 // LANDSCAPE GRID CONFIG — 4 cols x 2 rows = 8 exact slots
 // ========================================================
@@ -86,7 +92,8 @@ var state = {
             { id: 'w1', type: 'clock', span: 2, slot: 0 },
             { id: 'w2', type: 'weather', span: 1, slot: 2 },
             { id: 'w3', type: 'pet', span: 1, slot: 3 },
-            { id: 'w4', type: 'timer', span: 2, slot: 4 }
+            { id: 'w4', type: 'timer', span: 2, slot: 4 },
+            { id: 'w5', type: 'music', span: 2, slot: 6 }
         ];
     }
 
@@ -118,8 +125,12 @@ function saveState() {
 var WIDGET_ICONS = {
     weather: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17.5 17.5H7a4 4 0 1 1 1.1-7.85A5 5 0 0 1 18 11a3.5 3.5 0 0 1-.5 6.5Z" stroke-linejoin="round"/></svg>',
     pet: '<div class="tama-pixel-body"><div class="tama-row"><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><div class="tama-row"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="tama-row"><i class="on"></i><i class="on"></i><i class="eye"></i><i class="on"></i><i class="on"></i><i class="eye"></i><i class="on"></i><i class="on"></i></div><div class="tama-row"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><div class="tama-row"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="tama-row"><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i></div></div>',
-    timer: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2h6" stroke-linecap="round"/></svg>'
+    timer: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2h6" stroke-linecap="round"/></svg>',
+    music: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l11-2v13" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>'
 };
+
+var ICON_PREV = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>';
+var ICON_NEXT = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>';
 
 var ICON_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
@@ -167,6 +178,9 @@ function renderDashboardGrid() {
                 slot.innerHTML = '<div class="pet-wrapper"><div class="tama-shell"><div class="pet-scene"><div class="pet-sprite" id="pet-sprite-' + wData.id + '">' + WIDGET_ICONS.pet + '</div></div></div><div class="pet-label" id="pet-label-' + wData.id + '">idle</div></div>';
             } else if (wData.type === 'timer') {
                 slot.innerHTML = '<div class="simple-timer-wrapper"><div id="timer-display-' + wData.id + '">05:00</div><div class="timer-controls"><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="start">' + ICON_PLAY + '</button><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="reset">' + ICON_RESET + '</button></div></div>';
+            } else if (wData.type === 'music') {
+                var trackName = MUSIC_TRACKS.length ? MUSIC_TRACKS[0].title : 'No tracks found';
+                slot.innerHTML = '<div class="music-wrapper"><div class="music-icon">' + WIDGET_ICONS.music + '</div><div class="music-title" id="music-title-' + wData.id + '">' + trackName + '</div><div class="music-controls"><button class="icon-btn" data-music-id="' + wData.id + '" data-action="prev">' + ICON_PREV + '</button><button class="icon-btn" data-music-id="' + wData.id + '" data-action="playpause">' + ICON_PLAY + '</button><button class="icon-btn" data-music-id="' + wData.id + '" data-action="next">' + ICON_NEXT + '</button></div></div>';
             }
 
             if (jiggleMode) {
@@ -191,6 +205,7 @@ function renderDashboardGrid() {
     safeRun(initWeatherEngine);
     safeRun(initPetEngines);
     safeRun(initSimpleTimers);
+    safeRun(initMusicPlayers);
 }
 
 function enterJiggleMode() {
@@ -491,7 +506,111 @@ function bindTimerButton(btn) {
     });
 }
 
-// 5. Long-press empty background to open the Add Widget drawer
+// 5. Music player — plays files dropped into assets/audio/. Uses one
+//    shared <audio> element per widget instance; iOS requires a tap
+//    before any audio can start, so the first press always needs to be
+//    the play button itself (no auto-play attempted anywhere).
+var musicPlayers = {};
+
+function getMusicPlayer(id) {
+    if (!musicPlayers[id]) {
+        var audio = new Audio();
+        audio.preload = 'none';
+        musicPlayers[id] = { audio: audio, index: 0, playing: false };
+
+        audio.addEventListener('ended', function () {
+            safeRun(function () {
+                var p = musicPlayers[id];
+                p.index = (p.index + 1) % MUSIC_TRACKS.length;
+                loadAndPlay(id);
+            });
+        });
+    }
+    return musicPlayers[id];
+}
+
+function loadAndPlay(id) {
+    if (!MUSIC_TRACKS.length) return;
+    var p = getMusicPlayer(id);
+    var track = MUSIC_TRACKS[p.index];
+    p.audio.src = track.file;
+    var titleEl = document.getElementById('music-title-' + id);
+    if (titleEl) titleEl.textContent = track.title;
+
+    var playPromise = p.audio.play();
+    p.playing = true;
+    updatePlayIcon(id);
+
+    if (playPromise && playPromise.catch) {
+        playPromise.catch(function () {
+            safeRun(function () {
+                p.playing = false;
+                updatePlayIcon(id);
+                if (titleEl) titleEl.textContent = 'Tap play again';
+            });
+        });
+    }
+}
+
+function updatePlayIcon(id) {
+    var btn = document.querySelector('[data-music-id="' + id + '"][data-action="playpause"]');
+    if (!btn) return;
+    var p = getMusicPlayer(id);
+    btn.innerHTML = p.playing ? ICON_PAUSE : ICON_PLAY;
+}
+
+function initMusicPlayers() {
+    state.widgets.forEach(function (wData) {
+        if (wData.type !== 'music') return;
+        var titleEl = document.getElementById('music-title-' + wData.id);
+        if (!titleEl) return;
+        if (!MUSIC_TRACKS.length) {
+            titleEl.textContent = 'No tracks found';
+        }
+    });
+
+    var buttons = document.querySelectorAll('[data-music-id]');
+    for (var i = 0; i < buttons.length; i++) {
+        bindMusicButton(buttons[i]);
+    }
+}
+
+function bindMusicButton(btn) {
+    btn.addEventListener('touchend', function (e) {
+        e.stopPropagation();
+        safeRun(function () {
+            var id = btn.getAttribute('data-music-id');
+            var action = btn.getAttribute('data-action');
+            if (!MUSIC_TRACKS.length) return;
+            var p = getMusicPlayer(id);
+
+            if (action === 'playpause') {
+                if (!p.audio.src) {
+                    loadAndPlay(id);
+                } else if (p.playing) {
+                    p.audio.pause();
+                    p.playing = false;
+                    updatePlayIcon(id);
+                } else {
+                    var playPromise = p.audio.play();
+                    p.playing = true;
+                    updatePlayIcon(id);
+                    if (playPromise && playPromise.catch) {
+                        playPromise.catch(function () { p.playing = false; updatePlayIcon(id); });
+                    }
+                }
+            } else if (action === 'next') {
+                p.index = (p.index + 1) % MUSIC_TRACKS.length;
+                loadAndPlay(id);
+            } else if (action === 'prev') {
+                p.index = (p.index - 1 + MUSIC_TRACKS.length) % MUSIC_TRACKS.length;
+                loadAndPlay(id);
+            }
+        });
+    });
+}
+
+// 6. Long-press empty background to open the Add Widget drawer
 function initDrawerMechanics() {
     var surface = document.getElementById('landscape-view');
     var drawer = document.getElementById('widget-drawer');
@@ -522,7 +641,7 @@ function initDrawerMechanics() {
         setTimeout(function () { addLock = false; }, 400);
 
         var type = card.getAttribute('data-widget');
-        var span = (type === 'clock' || type === 'timer') ? 2 : 1;
+        var span = (type === 'clock' || type === 'timer' || type === 'music') ? 2 : 1;
         var freeSlot = findFreeSlot(span);
         if (freeSlot !== -1) {
             state.widgets.push({ id: 'w_' + Date.now(), type: type, span: span, slot: freeSlot });

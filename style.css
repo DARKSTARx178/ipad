@@ -200,6 +200,36 @@ html {
         padding: 0 8px;
     }
 
+    /* MODULAR SUBCOMPONENTS 3b: MUSIC PLAYER (plays files from assets/audio/) */
+    .music-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        color: #ff6482;
+        padding: 0 16px;
+    }
+
+    .music-title {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #ffffff;
+        text-align: center;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .music-controls {
+        margin-top: 12px;
+        display: flex;
+        justify-content: center;
+    }
+
     /* MODULAR SUBCOMPONENTS 4: TAMAGOTCHI-STYLE PIXEL PET */
     .pet-wrapper {
         display: flex;
