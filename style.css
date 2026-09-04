@@ -145,10 +145,27 @@ html {
     }
 
     .simple-timer-wrapper>div:first-child {
-        font-size: 2.6rem;
+        font-size: 2.2rem;
         font-weight: 300;
         color: #0a84ff;
         font-variant-numeric: tabular-nums;
+    }
+
+    .timer-adjust-row {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .adjust-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 10px;
     }
 
     .timer-controls {

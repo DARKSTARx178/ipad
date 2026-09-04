@@ -11,7 +11,7 @@ var OWM_UNITS = 'metric';
 // List every track dropped into assets/audio/ here, in play order.
 // File name only needed here since they all live in the same folder.
 var MUSIC_TRACKS = [
-    { title: 'Ordinary', file: 'assets/audio/Ordinary.mp3' },
+    // { title: 'Song Name', file: 'assets/audio/song1.mp3' },
 ];
 
 // ========================================================
@@ -177,7 +177,18 @@ function renderDashboardGrid() {
             } else if (wData.type === 'pet') {
                 slot.innerHTML = '<div class="pet-wrapper"><div class="tama-shell"><div class="pet-scene"><div class="pet-sprite" id="pet-sprite-' + wData.id + '">' + WIDGET_ICONS.pet + '</div></div></div><div class="pet-label" id="pet-label-' + wData.id + '">idle</div></div>';
             } else if (wData.type === 'timer') {
-                slot.innerHTML = '<div class="simple-timer-wrapper"><div id="timer-display-' + wData.id + '">05:00</div><div class="timer-controls"><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="start">' + ICON_PLAY + '</button><button class="icon-btn" data-timer-id="' + wData.id + '" data-action="reset">' + ICON_RESET + '</button></div></div>';
+                slot.innerHTML = '<div class="simple-timer-wrapper">' +
+                    '<div id="timer-display-' + wData.id + '">00:05:00</div>' +
+                    '<div class="timer-adjust-row">' +
+                    '<button class="adjust-btn" data-timer-id="' + wData.id + '" data-action="sub-min">−5m</button>' +
+                    '<button class="adjust-btn" data-timer-id="' + wData.id + '" data-action="add-min">+5m</button>' +
+                    '<button class="adjust-btn" data-timer-id="' + wData.id + '" data-action="add-hour">+1h</button>' +
+                    '</div>' +
+                    '<div class="timer-controls">' +
+                    '<button class="icon-btn" data-timer-id="' + wData.id + '" data-action="start">' + ICON_PLAY + '</button>' +
+                    '<button class="icon-btn" data-timer-id="' + wData.id + '" data-action="reset">' + ICON_RESET + '</button>' +
+                    '</div>' +
+                    '</div>';
             } else if (wData.type === 'music') {
                 var trackName = MUSIC_TRACKS.length ? MUSIC_TRACKS[0].title : 'No tracks found';
                 slot.innerHTML = '<div class="music-wrapper"><div class="music-icon">' + WIDGET_ICONS.music + '</div><div class="music-title" id="music-title-' + wData.id + '">' + trackName + '</div><div class="music-controls"><button class="icon-btn" data-music-id="' + wData.id + '" data-action="prev">' + ICON_PREV + '</button><button class="icon-btn" data-music-id="' + wData.id + '" data-action="playpause">' + ICON_PLAY + '</button><button class="icon-btn" data-music-id="' + wData.id + '" data-action="next">' + ICON_NEXT + '</button></div></div>';
@@ -442,19 +453,29 @@ function getTimerState(id) {
     return timerData[id];
 }
 
-function formatMMSS(totalSeconds) {
-    var m = Math.floor(totalSeconds / 60).toString();
-    var s = (totalSeconds % 60).toString();
-    if (m.length < 2) m = '0' + m;
-    if (s.length < 2) s = '0' + s;
-    return m + ':' + s;
+function formatHMS(totalSeconds) {
+    var h = Math.floor(totalSeconds / 3600);
+    var m = Math.floor((totalSeconds % 3600) / 60);
+    var s = totalSeconds % 60;
+    var hh = h.toString(); if (hh.length < 2) hh = '0' + hh;
+    var mm = m.toString(); if (mm.length < 2) mm = '0' + mm;
+    var ss = s.toString(); if (ss.length < 2) ss = '0' + ss;
+    return hh + ':' + mm + ':' + ss;
 }
+
+var TIMER_MAX_SECONDS = 24 * 60 * 60;
 
 function initSimpleTimers() {
     var buttons = document.querySelectorAll('[data-timer-id]');
     for (var i = 0; i < buttons.length; i++) {
         bindTimerButton(buttons[i]);
     }
+}
+
+function refreshTimerDisplay(id) {
+    var ts = getTimerState(id);
+    var displayEl = document.getElementById('timer-display-' + id);
+    if (displayEl) displayEl.textContent = formatHMS(ts.remaining);
 }
 
 function bindTimerButton(btn) {
@@ -464,20 +485,30 @@ function bindTimerButton(btn) {
             var id = btn.getAttribute('data-timer-id');
             var action = btn.getAttribute('data-action');
             var ts = getTimerState(id);
-            var displayEl = document.getElementById('timer-display-' + id);
+
+            if (action === 'add-min' || action === 'sub-min' || action === 'add-hour') {
+                if (ts.running) return; // only adjust while stopped, like a normal kitchen timer
+                var delta = action === 'add-min' ? 300 : action === 'sub-min' ? -300 : 3600;
+                ts.remaining += delta;
+                if (ts.remaining < 0) ts.remaining = 0;
+                if (ts.remaining > TIMER_MAX_SECONDS) ts.remaining = TIMER_MAX_SECONDS;
+                refreshTimerDisplay(id);
+                return;
+            }
 
             if (action === 'reset') {
                 clearInterval(ts.interval);
                 ts.interval = null;
                 ts.running = false;
                 ts.remaining = 300;
-                if (displayEl) displayEl.textContent = formatMMSS(ts.remaining);
+                refreshTimerDisplay(id);
                 var playBtn = document.querySelector('[data-timer-id="' + id + '"][data-action="start"]');
                 if (playBtn) playBtn.innerHTML = ICON_PLAY;
                 return;
             }
 
             if (action === 'start') {
+                if (ts.remaining <= 0) return;
                 if (ts.running) {
                     clearInterval(ts.interval);
                     ts.interval = null;
@@ -490,8 +521,7 @@ function bindTimerButton(btn) {
                         safeRun(function () {
                             if (ts.remaining > 0) {
                                 ts.remaining--;
-                                var d = document.getElementById('timer-display-' + id);
-                                if (d) d.textContent = formatMMSS(ts.remaining);
+                                refreshTimerDisplay(id);
                             } else {
                                 clearInterval(ts.interval);
                                 ts.interval = null;
